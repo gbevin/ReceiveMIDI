@@ -74,8 +74,48 @@ The MIDI device name doesn't have to be an exact match.
 If ReceiveMIDI can't find the exact name that was specified, it will pick the first MIDI output port that contains the provided text, irrespective of case.
 
 ## Examples
+  
+Here are a few examples to get you started:
+
+List all the available MIDI output ports on your system
+
+```
+receivemidi list
+```
+
+Receive all the MIDI messages coming from LinnStrument:
+
+```
+receivemidi dev "LinnStrument MIDI"
+```
+
+Receive only notes coming from LinnStrument:
+
+```
+receivemidi dev "LinnStrument MIDI" note
+```
+
+Receive all voice messages coming from LinnStrument, and also MIDI clock start and stop, all displayed with a timestamp:
+
+```
+receivemidi dev "LinnStrument MIDI" ts voice start stop
+```
+
+## Text File Format
+
+The text file that can be read through the "file" command can contain a list of commands and options, just like when you would have written them manually on the console (without the "sendmidi" executable). You can insert new lines instead of spaces and any line that starts with a hash (#) character is a comment.
+
+For instance, this is a text file for one of the examples above:
+```
+dev "LinnStrument MIDI"
+# timestamp the output
+ts
+# show all voice messages
+voice
+# show MIDI clock start and stop
+start stop
+```
 
 ## SendMIDI compatibility
 
 The output of the ReceiveMIDI tool is compatible with the SendMIDI tools, allowing you to store MIDI message sequences and play them back later. By using Unix-style pipes on the command-line, it's even possible to chain the receivemidi and sendmidi commands in order to redirect MIDI messages.
-
