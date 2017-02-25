@@ -283,7 +283,7 @@ private:
         return channel == 0 || msg.getChannel() == channel;
     }
     
-    void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& msg) override
+    void handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg) override
     {
         if (!filterCommands_.isEmpty())
         {
