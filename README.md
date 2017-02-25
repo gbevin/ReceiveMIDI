@@ -101,6 +101,12 @@ Receive all voice messages coming from LinnStrument, and also MIDI clock start a
 receivemidi dev "LinnStrument MIDI" ts voice start stop
 ```
 
+Receive all messages from LinnStrument and pipe them to the SendMIDI tool in order to forward them to Bidule:
+
+```
+receivemidi dev linnstrument | sendmidi dev "Bidule  1" --
+```
+
 ## Text File Format
 
 The text file that can be read through the "file" command can contain a list of commands and options, just like when you would have written them manually on the console (without the "sendmidi" executable). You can insert new lines instead of spaces and any line that starts with a hash (#) character is a comment.
@@ -118,4 +124,6 @@ start stop
 
 ## SendMIDI compatibility
 
-The output of the ReceiveMIDI tool is compatible with the SendMIDI tools, allowing you to store MIDI message sequences and play them back later. By using Unix-style pipes on the command-line, it's even possible to chain the receivemidi and sendmidi commands in order to redirect MIDI messages.
+The output of the ReceiveMIDI tool is compatible with the SendMIDI tool, allowing you to store MIDI message sequences and play them back later. By using Unix-style pipes on the command-line, it's even possible to chain the receivemidi and sendmidi commands in order to forward MIDI messages.
+
+SendMIDI can be downloaded from https://github.com/gbevin/SendMIDI
