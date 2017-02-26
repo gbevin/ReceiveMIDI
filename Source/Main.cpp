@@ -29,6 +29,7 @@ enum CommandIndex
     HEXADECIMAL,
     CHANNEL,
     TIMESTAMP,
+    NOTE_NUMBERS,
     VOICE,
     NOTE,
     NOTE_ON,
@@ -95,7 +96,8 @@ public:
         commands_.add({"dec",   "decimal",          DECIMAL,            0, "",               "Interpret the next numbers as decimals by default"});
         commands_.add({"hex",   "hexadecimal",      HEXADECIMAL,        0, "",               "Interpret the next numbers as hexadecimals by default"});
         commands_.add({"ch",    "channel",          CHANNEL,            1, "number",         "Set MIDI channel for the commands (0-16), defaults to 0"});
-        commands_.add({"ts",    "timestamp",        TIMESTAMP,          0, "",               "Output a timestamp for each receive MIDI message"});
+        commands_.add({"ts",    "timestamp",        TIMESTAMP,          0, "",               "Output a timestamp for each received MIDI message"});
+        commands_.add({"nn",    "note-numbers",     NOTE_NUMBERS,       0, "",               "Output notes as numbers instead of names"});
         commands_.add({"voice", "",                 VOICE,              0, "",               "Show all Channel Voice messages"});
         commands_.add({"note",  "",                 NOTE,               0, "",               "Show all Note messages"});
         commands_.add({"on",    "note-on",          NOTE_ON,           -1, "(note)",         "Show Note On, optionally for note (0-127)"});
@@ -120,6 +122,7 @@ public:
         commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
         
         timestampOutput_ = false;
+        noteNumbersOutput_ = false;
         useHexadecimalsByDefault_ = false;
         currentCommand_ = ApplicationCommand::Dummy();
     }
@@ -308,17 +311,17 @@ private:
                     case NOTE_ON:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isNoteOn() &&
-                                    (cmd.opts_.isEmpty() || (msg.getNoteNumber() == asDecOrHex7BitValue(cmd.opts_[0])));
+                                    (cmd.opts_.isEmpty() || (msg.getNoteNumber() == asNoteNumber(cmd.opts_[0])));
                         break;
                     case NOTE_OFF:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isNoteOff() &&
-                                    (cmd.opts_.isEmpty() || (msg.getNoteNumber() == asDecOrHex7BitValue(cmd.opts_[0])));
+                                    (cmd.opts_.isEmpty() || (msg.getNoteNumber() == asNoteNumber(cmd.opts_[0])));
                         break;
                     case POLY_PRESSURE:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isAftertouch() &&
-                                    (cmd.opts_.isEmpty() || (msg.getNoteNumber() == asDecOrHex7BitValue(cmd.opts_[0])));
+                                    (cmd.opts_.isEmpty() || (msg.getNoteNumber() == asNoteNumber(cmd.opts_[0])));
                         break;
                     case CONTROL_CHANGE:
                         filtered |= checkChannel(msg, channel) &&
@@ -406,20 +409,23 @@ private:
         if (msg.isNoteOn())
         {
             std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "note-on          " << String(msg.getNoteNumber()).paddedLeft(' ', 3) << " "
-                                             << String(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+                         "note-on         ";
+            outputNote(msg);
+            std::cout << " " << String(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.isNoteOff())
         {
             std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "note-off         " << String(msg.getNoteNumber()).paddedLeft(' ', 3) << " "
-                                             << String(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+                         "note-off        ";
+            outputNote(msg);
+            std::cout << " " << String(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.isAftertouch())
         {
             std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "poly-pressure    " << String(msg.getNoteNumber()).paddedLeft(' ', 3) << " "
-                                             << String(msg.getAfterTouchValue()).paddedLeft(' ', 3) << std::endl;
+                         "poly-pressure   ";
+            outputNote(msg);
+            std::cout << " " << String(msg.getAfterTouchValue()).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.isController())
         {
@@ -493,6 +499,18 @@ private:
         else if (msg.getRawDataSize() == 1 && msg.getRawData()[0] == 0xf6)
         {
             std::cout << "tune-request" << std::endl;
+        }
+    }
+    
+    void outputNote(const MidiMessage& msg)
+    {
+        if (noteNumbersOutput_)
+        {
+            std::cout << String(msg.getNoteNumber()).paddedLeft(' ', 4);
+        }
+        else
+        {
+            std::cout << MidiMessage::getMidiNoteName(msg.getNoteNumber(), true, true, 5).paddedLeft(' ', 4);
         }
     }
     
@@ -579,10 +597,51 @@ private:
             case TIMESTAMP:
                 timestampOutput_ = true;
                 break;
+            case NOTE_NUMBERS:
+                noteNumbersOutput_ = true;
             default:
                 filterCommands_.add(cmd);
                 break;
         }
+    }
+    
+    uint8 asNoteNumber(String value)
+    {
+        if (value.length() >= 2)
+        {
+            value = value.toUpperCase();
+            String first = value.substring(0, 1);
+            if (first.containsOnly("CDEFGABH") && value.substring(value.length()-1).containsOnly("1234567890"))
+            {
+                int note;
+                switch (first[0])
+                {
+                    case 'C': note = 0; break;
+                    case 'D': note = 2; break;
+                    case 'E': note = 4; break;
+                    case 'F': note = 5; break;
+                    case 'G': note = 7; break;
+                    case 'A': note = 9; break;
+                    case 'B': note = 11; break;
+                    case 'H': note = 11; break;
+                }
+                
+                if (value[1] == 'B')
+                {
+                    note -= 1;
+                }
+                else if (value[1] == '#')
+                {
+                    note += 1;
+                }
+                
+                note += value.getTrailingIntValue() * 12;
+                
+                return (uint8)limit7Bit(note);
+            }
+        }
+        
+        return (uint8)limit7Bit(asDecOrHexIntValue(value));
     }
     
     uint8 asDecOrHex7BitValue(String value)
@@ -671,11 +730,17 @@ private:
         std::cout << "If ReceiveMIDI can't find the exact name that was specified, it will pick the" << std::endl
                   << "first MIDI output port that contains the provided text, irrespective of case." << std::endl;
         std::cout << std::endl;
+        std::cout << "Where notes can be provided as arguments, they can also be written as note" << std::endl
+                  << "names, from C0 to G10 which corresponds to the note numbers 0 to 127." << std::endl
+                  << "Sharps can be added by using the '#' symbol after the note letter, and flats" << std::endl
+                  << "by using the letter 'b'. " << std::endl;
+        std::cout << std::endl;
     }
     
     Array<ApplicationCommand> commands_;
     Array<ApplicationCommand> filterCommands_;
     bool timestampOutput_;
+    bool noteNumbersOutput_;
     String midiInName_;
     ScopedPointer<MidiInput> midiIn_;
     String fullMidiInName_;
