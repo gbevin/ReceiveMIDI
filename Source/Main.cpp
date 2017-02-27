@@ -30,6 +30,7 @@ enum CommandIndex
     CHANNEL,
     TIMESTAMP,
     NOTE_NUMBERS,
+    OCTAVE_MIDDLE_C,
     VOICE,
     NOTE,
     NOTE_ON,
@@ -53,6 +54,8 @@ enum CommandIndex
     SONG_SELECT,
     TUNE_REQUEST
 };
+
+static const int DEFAULT_OCTAVE_MIDDLE_C = 5;
 
 struct ApplicationCommand
 {
@@ -98,6 +101,7 @@ public:
         commands_.add({"ch",    "channel",          CHANNEL,            1, "number",         "Set MIDI channel for the commands (0-16), defaults to 0"});
         commands_.add({"ts",    "timestamp",        TIMESTAMP,          0, "",               "Output a timestamp for each received MIDI message"});
         commands_.add({"nn",    "note-numbers",     NOTE_NUMBERS,       0, "",               "Output notes as numbers instead of names"});
+        commands_.add({"omc",   "octave-middle-c",  OCTAVE_MIDDLE_C,    1, "number",         "Set octave for middle C, defaults to 5"});
         commands_.add({"voice", "",                 VOICE,              0, "",               "Show all Channel Voice messages"});
         commands_.add({"note",  "",                 NOTE,               0, "",               "Show all Note messages"});
         commands_.add({"on",    "note-on",          NOTE_ON,           -1, "(note)",         "Show Note On, optionally for note (0-127)"});
@@ -123,6 +127,7 @@ public:
         
         timestampOutput_ = false;
         noteNumbersOutput_ = false;
+        octaveMiddleC_ = DEFAULT_OCTAVE_MIDDLE_C;
         useHexadecimalsByDefault_ = false;
         currentCommand_ = ApplicationCommand::Dummy();
     }
@@ -408,45 +413,39 @@ private:
         
         if (msg.isNoteOn())
         {
-            std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "note-on         ";
-            outputNote(msg);
-            std::cout << " " << String(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+            std::cout << "channel "  << outputChannel(msg) << "   " <<
+                         "note-on         " << outputNote(msg) << " " << output7Bit(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.isNoteOff())
         {
-            std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "note-off        ";
-            outputNote(msg);
-            std::cout << " " << String(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+            std::cout << "channel "  << outputChannel(msg) << "   " <<
+                         "note-off        " << outputNote(msg) << " " << output7Bit(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.isAftertouch())
         {
-            std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "poly-pressure   ";
-            outputNote(msg);
-            std::cout << " " << String(msg.getAfterTouchValue()).paddedLeft(' ', 3) << std::endl;
+            std::cout << "channel "  << outputChannel(msg) << "   " <<
+                         "poly-pressure   " << outputNote(msg) << " " << output7Bit(msg.getAfterTouchValue()).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.isController())
         {
-            std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "control-change   " << String(msg.getControllerNumber()).paddedLeft(' ', 3) << " "
-                                             << String(msg.getControllerValue()).paddedLeft(' ', 3) << std::endl;
+            std::cout << "channel "  << outputChannel(msg) << "   " <<
+                         "control-change   " << output7Bit(msg.getControllerNumber()).paddedLeft(' ', 3) << " "
+                                             << output7Bit(msg.getControllerValue()).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.isProgramChange())
         {
-            std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "program-change   " << String(msg.getProgramChangeNumber()).paddedLeft(' ', 7) << std::endl;
+            std::cout << "channel "  << outputChannel(msg) << "   " <<
+                         "program-change   " << output7Bit(msg.getProgramChangeNumber()).paddedLeft(' ', 7) << std::endl;
         }
         else if (msg.isChannelPressure())
         {
-            std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "channel-pressure " << String(msg.getChannelPressureValue()).paddedLeft(' ', 7) << std::endl;
+            std::cout << "channel "  << outputChannel(msg) << "   " <<
+                         "channel-pressure " << output7Bit(msg.getChannelPressureValue()).paddedLeft(' ', 7) << std::endl;
         }
         else if (msg.isPitchWheel())
         {
-            std::cout << "channel "  << String(msg.getChannel()).paddedLeft(' ', 2) << "   " <<
-                         "pitch-bend       " << String(msg.getPitchWheelValue()).paddedLeft(' ', 7) << std::endl;
+            std::cout << "channel "  << outputChannel(msg) << "   " <<
+                         "pitch-bend       " << output14Bit(msg.getPitchWheelValue()).paddedLeft(' ', 7) << std::endl;
         }
         else if (msg.isMidiClock())
         {
@@ -474,23 +473,33 @@ private:
         }
         else if (msg.isSysEx())
         {
-            std::cout << "system-exclusive hex";
+            std::cout << "system-exclusive";
+            
+            if (!useHexadecimalsByDefault_)
+            {
+                std::cout << " hex";
+            }
+            
             int size = msg.getSysExDataSize();
             const uint8* data = msg.getSysExData();
             while (size--)
             {
                 uint8 b = *data++;
-                std::cout << " " << String::toHexString(b).paddedLeft('0', 2).toUpperCase();
+                std::cout << " " << output7BitAsHex(b);
             }
-            std::cout << " dec" << std::endl;
+            
+            if (!useHexadecimalsByDefault_)
+            {
+                std::cout << " dec" << std::endl;
+            }
         }
         else if (msg.isQuarterFrame())
         {
-            std::cout << "time-code " << String(msg.getQuarterFrameSequenceNumber()).paddedLeft(' ', 2) << " " << String(msg.getQuarterFrameValue()) << std::endl;
+            std::cout << "time-code " << output7Bit(msg.getQuarterFrameSequenceNumber()).paddedLeft(' ', 2) << " " << output7Bit(msg.getQuarterFrameValue()) << std::endl;
         }
         else if (msg.isSongPositionPointer())
         {
-            std::cout << "song-position " << String(msg.getSongPositionPointerMidiBeat()).paddedLeft(' ', 5) << std::endl;
+            std::cout << "song-position " << output7Bit(msg.getSongPositionPointerMidiBeat()).paddedLeft(' ', 5) << std::endl;
         }
         else if (msg.getRawDataSize() == 2 && msg.getRawData()[0] == 0xf3)
         {
@@ -502,16 +511,55 @@ private:
         }
     }
     
-    void outputNote(const MidiMessage& msg)
+    String output7BitAsHex(int v)
     {
-        if (noteNumbersOutput_)
+        return String::toHexString(v).paddedLeft('0', 2).toUpperCase();
+    }
+    
+    String output7Bit(int v)
+    {
+        if (useHexadecimalsByDefault_)
         {
-            std::cout << String(msg.getNoteNumber()).paddedLeft(' ', 4);
+            return output7BitAsHex(v);
         }
         else
         {
-            std::cout << MidiMessage::getMidiNoteName(msg.getNoteNumber(), true, true, 5).paddedLeft(' ', 4);
+            return String(v);
         }
+    }
+    
+    String output14BitAsHex(int v)
+    {
+        return String::toHexString(v).paddedLeft('0', 4).toUpperCase();
+    }
+    
+    String output14Bit(int v)
+    {
+        if (useHexadecimalsByDefault_)
+        {
+            return output14BitAsHex(v);
+        }
+        else
+        {
+            return String(v);
+        }
+    }
+    
+    String outputNote(const MidiMessage& msg)
+    {
+        if (noteNumbersOutput_)
+        {
+            return output7Bit(msg.getNoteNumber()).paddedLeft(' ', 4);
+        }
+        else
+        {
+            return MidiMessage::getMidiNoteName(msg.getNoteNumber(), true, true, octaveMiddleC_).paddedLeft(' ', 4);
+        }
+    }
+    
+    String outputChannel(const MidiMessage& msg)
+    {
+        return output7Bit(msg.getChannel()).paddedLeft(' ', 2);
     }
     
     bool tryToConnectMidiInput()
@@ -599,6 +647,10 @@ private:
                 break;
             case NOTE_NUMBERS:
                 noteNumbersOutput_ = true;
+                break;
+            case OCTAVE_MIDDLE_C:
+                octaveMiddleC_ = asDecOrHex7BitValue(cmd.opts_[0]);
+                break;
             default:
                 filterCommands_.add(cmd);
                 break;
@@ -635,7 +687,7 @@ private:
                     note += 1;
                 }
                 
-                note += value.getTrailingIntValue() * 12;
+                note += (value.getTrailingIntValue() + DEFAULT_OCTAVE_MIDDLE_C - octaveMiddleC_) * 12;
                 
                 return (uint8)limit7Bit(note);
             }
@@ -731,7 +783,8 @@ private:
                   << "first MIDI output port that contains the provided text, irrespective of case." << std::endl;
         std::cout << std::endl;
         std::cout << "Where notes can be provided as arguments, they can also be written as note" << std::endl
-                  << "names, from C0 to G10 which corresponds to the note numbers 0 to 127." << std::endl
+                  << "names, by default from C0 to G10 which corresponds to note numbers 0 to 127." << std::endl
+                  << "By setting the octave for middle C, the note name range can be changed. " << std::endl
                   << "Sharps can be added by using the '#' symbol after the note letter, and flats" << std::endl
                   << "by using the letter 'b'. " << std::endl;
         std::cout << std::endl;
@@ -741,10 +794,11 @@ private:
     Array<ApplicationCommand> filterCommands_;
     bool timestampOutput_;
     bool noteNumbersOutput_;
+    int octaveMiddleC_;
+    bool useHexadecimalsByDefault_;
     String midiInName_;
     ScopedPointer<MidiInput> midiIn_;
     String fullMidiInName_;
-    bool useHexadecimalsByDefault_;
     ApplicationCommand currentCommand_;
 };
 

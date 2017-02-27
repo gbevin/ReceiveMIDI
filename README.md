@@ -38,6 +38,7 @@ These are all the supported commands:
   ch    number         Set MIDI channel for the commands (0-16), defaults to 0
   ts                   Output a timestamp for each received MIDI message
   nn                   Output notes as numbers instead of names
+  omc   number         Set octave for middle C, defaults to 5
   voice                Show all Channel Voice messages
   note                 Show all Note messages
   on    (note)         Show Note On, optionally for note (0-127)
@@ -65,10 +66,10 @@ These are all the supported commands:
 
 Alternatively, you can use the following long versions of the commands:
 ```
-  device decimal hexadecimal channel timestamp note-numbers note-on note-off
-  poly-pressure control-change program-change channel-pressure pitch-bend
-  system-realtime continue active-sensing reset system-common system-exclusive
-  time-code song-position song-select tune-request
+  device decimal hexadecimal channel timestamp note-numbers octave-middle-c
+  note-on note-off poly-pressure control-change program-change channel-pressure
+  pitch-bend system-realtime continue active-sensing reset system-common
+  system-exclusive time-code song-position song-select tune-request
 ```
 
 By default, numbers are interpreted in the decimal system, this can be changed to hexadecimal by sending the "hex" command.
@@ -77,7 +78,7 @@ Additionally, by suffixing a number with "M" or "H", it will be interpreted as a
 The MIDI device name doesn't have to be an exact match.
 If ReceiveMIDI can't find the exact name that was specified, it will pick the first MIDI output port that contains the provided text, irrespective of case.
 
-Where notes can be provided as arguments, they can also be written as note names, from C0 to G10 which corresponds to the note numbers 0 to 127. Sharps can be added by using the '#' symbol after the note letter, and flats by using the letter 'b'.
+Where notes can be provided as arguments, they can also be written as note names, by default from C0 to G10 which corresponds to note numbers 0 to 127. By setting the octave for middle C, the note name range can be changed. Sharps can be added by using the '#' symbol after the note letter, and flats by using the letter 'b'.
 
 ## Examples
   
@@ -131,5 +132,7 @@ start stop
 ## SendMIDI compatibility
 
 The output of the ReceiveMIDI tool is compatible with the SendMIDI tool, allowing you to store MIDI message sequences and play them back later. By using Unix-style pipes on the command-line, it's even possible to chain the receivemidi and sendmidi commands in order to forward MIDI messages.
+
+If you changed the octave for middle C or are outputting hexadecimal numbers instead of the default decimal numbers, make sure that you set up SendMIDI with the same parameters.
 
 SendMIDI can be downloaded from https://github.com/gbevin/SendMIDI
