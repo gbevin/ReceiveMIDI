@@ -9,6 +9,10 @@ The project website is https://github.com/gbevin/ReceiveMIDI
 ## Purpose
 This tool is mainly intended for quickly monitoring the messages that are sent to your computer from a particular MIDI device. By providing filter commands, it's possible to only focus on particular MIDI messages.
 
+Here's a tutorial video about both SendMIDI and ReceiveMIDI, including some tips and tricks of how to use the command-line on macOS:
+
+<a href="https://www.youtube.com/watch?v=_o1kg0IbetY" target="_blank"><img src="https://i.ytimg.com/vi/_o1kg0IbetY/maxresdefault.jpg" alt="Tutorial Video" width="640" height="360" border="2" /></a>
+
 ## Download
 
 You can download pre-built binaries from the release section:
