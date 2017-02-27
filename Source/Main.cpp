@@ -499,11 +499,11 @@ private:
         }
         else if (msg.isSongPositionPointer())
         {
-            std::cout << "song-position " << output7Bit(msg.getSongPositionPointerMidiBeat()).paddedLeft(' ', 5) << std::endl;
+            std::cout << "song-position " << output14Bit(msg.getSongPositionPointerMidiBeat()).paddedLeft(' ', 5) << std::endl;
         }
         else if (msg.getRawDataSize() == 2 && msg.getRawData()[0] == 0xf3)
         {
-            std::cout << "song-select " << String(msg.getRawData()[1]).paddedLeft(' ', 3) << std::endl;
+            std::cout << "song-select " << output7Bit(msg.getRawData()[1]).paddedLeft(' ', 3) << std::endl;
         }
         else if (msg.getRawDataSize() == 1 && msg.getRawData()[0] == 0xf6)
         {
