@@ -24,6 +24,7 @@ enum CommandIndex
     NONE,
     LIST,
     DEVICE,
+    VIRTUAL,
     TXTFILE,
     DECIMAL,
     HEXADECIMAL,
@@ -55,7 +56,8 @@ enum CommandIndex
     TUNE_REQUEST
 };
 
-static const int DEFAULT_OCTAVE_MIDDLE_C = 5;
+static const int DEFAULT_OCTAVE_MIDDLE_C = 3;
+static const String& DEFAULT_VIRTUAL_NAME = "ReceiveMIDI";
 
 struct ApplicationCommand
 {
@@ -93,7 +95,8 @@ class receiveMidiApplication  : public JUCEApplicationBase, public MidiInputCall
 public:
     receiveMidiApplication()
     {
-        commands_.add({"dev",   "device",           DEVICE,             1, "name",           "Set the name of the MIDI input port (REQUIRED)"});
+        commands_.add({"dev",   "device",           DEVICE,             1, "name",           "Set the name of the MIDI input port"});
+        commands_.add({"virt",  "virtual",          VIRTUAL,           -1, "(name)",         "Use virtual MIDI port with optional name (Linux/macOS)"});
         commands_.add({"list",  "",                 LIST,               0, "",               "Lists the MIDI input ports"});
         commands_.add({"file",  "",                 TXTFILE,            1, "path",           "Loads commands from the specified program file"});
         commands_.add({"dec",   "decimal",          DECIMAL,            0, "",               "Interpret the next numbers as decimals by default"});
@@ -101,7 +104,7 @@ public:
         commands_.add({"ch",    "channel",          CHANNEL,            1, "number",         "Set MIDI channel for the commands (0-16), defaults to 0"});
         commands_.add({"ts",    "timestamp",        TIMESTAMP,          0, "",               "Output a timestamp for each received MIDI message"});
         commands_.add({"nn",    "note-numbers",     NOTE_NUMBERS,       0, "",               "Output notes as numbers instead of names"});
-        commands_.add({"omc",   "octave-middle-c",  OCTAVE_MIDDLE_C,    1, "number",         "Set octave for middle C, defaults to 5"});
+        commands_.add({"omc",   "octave-middle-c",  OCTAVE_MIDDLE_C,    1, "number",         "Set octave for middle C, defaults to 3"});
         commands_.add({"voice", "",                 VOICE,              0, "",               "Show all Channel Voice messages"});
         commands_.add({"note",  "",                 NOTE,               0, "",               "Show all Note messages"});
         commands_.add({"on",    "note-on",          NOTE_ON,           -1, "(note)",         "Show Note On, optionally for note (0-127)"});
@@ -217,14 +220,24 @@ private:
         return parameters;
     }
     
+    void handleVarArgCommand()
+    {
+        if (currentCommand_.expectedOptions_ < 0)
+        {
+            executeCommand(currentCommand_);
+        }
+    }
+    
     void parseParameters(StringArray& parameters)
     {
         for (String param : parameters)
         {
+            if (param == "--") continue;
+            
             ApplicationCommand* cmd = findApplicationCommand(param);
             if (cmd)
             {
-                // handle configuration commands immediately without setting up a new
+                // handle configuration commands immediately without setting up a new one
                 switch (cmd->command_)
                 {
                     case DECIMAL:
@@ -234,11 +247,7 @@ private:
                         useHexadecimalsByDefault_ = true;
                         break;
                     default:
-                        // handle variable arg commands
-                        if (currentCommand_.expectedOptions_ < 0)
-                        {
-                            executeCommand(currentCommand_);
-                        }
+                        handleVarArgCommand();
                         
                         currentCommand_ = *cmd;
                         break;
@@ -265,11 +274,7 @@ private:
             }
         }
         
-        // handle variable arg commands
-        if (currentCommand_.expectedOptions_ < 0)
-        {
-            executeCommand(currentCommand_);
-        }
+        handleVarArgCommand();
     }
     
     void parseFile(File file)
@@ -622,6 +627,30 @@ private:
                 }
                 break;
             }
+            case VIRTUAL:
+            {
+#if (JUCE_LINUX || JUCE_MAC)
+                String name = DEFAULT_VIRTUAL_NAME;
+                if (cmd.opts_.size())
+                {
+                    name = cmd.opts_[0];
+                }
+                midiIn_ = MidiInput::createNewDevice(name, this);
+                if (midiIn_ == nullptr)
+                {
+                    std::cerr << "Couldn't create virtual MIDI input port \"" << name << "\"" << std::endl;
+                }
+                else
+                {
+                    midiInName_ = cmd.opts_[0];
+                    fullMidiInName_.clear();
+                    midiIn_->start();
+                }
+#else
+                std::cerr << "Virtual MIDI input ports are not supported on Windows" << std::endl;
+#endif
+                break;
+            }
             case TXTFILE:
             {
                 String path(cmd.opts_[0]);
@@ -687,7 +716,7 @@ private:
                     note += 1;
                 }
                 
-                note += (value.getTrailingIntValue() + DEFAULT_OCTAVE_MIDDLE_C - octaveMiddleC_) * 12;
+                note += (value.getTrailingIntValue() + 5 - octaveMiddleC_) * 12;
                 
                 return (uint8)limit7Bit(note);
             }
@@ -783,7 +812,7 @@ private:
                   << "first MIDI output port that contains the provided text, irrespective of case." << std::endl;
         std::cout << std::endl;
         std::cout << "Where notes can be provided as arguments, they can also be written as note" << std::endl
-                  << "names, by default from C0 to G10 which corresponds to note numbers 0 to 127." << std::endl
+                  << "names, by default from C-2 to G8 which corresponds to note numbers 0 to 127." << std::endl
                   << "By setting the octave for middle C, the note name range can be changed. " << std::endl
                   << "Sharps can be added by using the '#' symbol after the note letter, and flats" << std::endl
                   << "by using the letter 'b'. " << std::endl;
