@@ -62,6 +62,8 @@ These are all the supported commands:
   spp                  Show Song Position Pointer
   ss                   Show Song Select
   tun                  Show Tune Request
+  -h  or  --help       Print Help (this message) and exit
+  --version            Print version information and exit
   --                   Read commands from standard input until it's closed
 ```
 
