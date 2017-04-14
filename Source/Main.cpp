@@ -143,6 +143,19 @@ public:
     void initialise(const String&) override
     {
         StringArray cmdLineParams(getCommandLineParameterArray());
+        if (cmdLineParams.contains("--help") || cmdLineParams.contains("-h"))
+        {
+            printUsage();
+            systemRequestedQuit();
+            return;
+        }
+        else if (cmdLineParams.contains("--version"))
+        {
+            printVersion();
+            systemRequestedQuit();
+            return;
+        }
+        
         parseParameters(cmdLineParams);
         
         if (cmdLineParams.contains("--"))
@@ -765,10 +778,16 @@ private:
         return (uint16)jlimit(0, 0x3fff, value);
     }
     
-    void printUsage()
+    void printVersion()
     {
         std::cout << ProjectInfo::projectName << " v" << ProjectInfo::versionString << std::endl;
-        std::cout << "https://github.com/gbevin/ReceiveMIDI" << std::endl << std::endl;
+        std::cout << "https://github.com/gbevin/ReceiveMIDI" << std::endl;
+    }
+    
+    void printUsage()
+    {
+        printVersion();
+        std::cout << std::endl;
         std::cout << "Usage: " << ProjectInfo::projectName << " [ commands ] [ programfile ] [ -- ]" << std::endl << std::endl
                   << "Commands:" << std::endl;
         for (auto&& cmd : commands_)
@@ -785,6 +804,8 @@ private:
             std::cout << "  " << cmd.commandDescription_;
             std::cout << std::endl;
         }
+        std::cout << "  -h  or  --help       Print Help (this message) and exit" << std::endl;
+        std::cout << "  --version            Print version information and exit" << std::endl;
         std::cout << "  --                   Read commands from standard input until it's closed" << std::endl;
         std::cout << std::endl;
         std::cout << "Alternatively, you can use the following long versions of the commands:" << std::endl;
@@ -816,7 +837,6 @@ private:
                   << "By setting the octave for middle C, the note name range can be changed. " << std::endl
                   << "Sharps can be added by using the '#' symbol after the note letter, and flats" << std::endl
                   << "by using the letter 'b'. " << std::endl;
-        std::cout << std::endl;
     }
     
     Array<ApplicationCommand> commands_;
