@@ -25,6 +25,7 @@ enum CommandIndex
     LIST,
     DEVICE,
     VIRTUAL,
+    PASSTHROUGH,
     TXTFILE,
     DECIMAL,
     HEXADECIMAL,
@@ -97,6 +98,7 @@ public:
     {
         commands_.add({"dev",   "device",           DEVICE,             1, "name",           "Set the name of the MIDI input port"});
         commands_.add({"virt",  "virtual",          VIRTUAL,           -1, "(name)",         "Use virtual MIDI port with optional name (Linux/macOS)"});
+        commands_.add({"pass",  "pass-through",     PASSTHROUGH,        1, "name",           "Set name of MIDI output port for MIDI pass-through"});
         commands_.add({"list",  "",                 LIST,               0, "",               "Lists the MIDI input ports"});
         commands_.add({"file",  "",                 TXTFILE,            1, "path",           "Loads commands from the specified program file"});
         commands_.add({"dec",   "decimal",          DECIMAL,            0, "",               "Interpret the next numbers as decimals by default"});
@@ -419,6 +421,11 @@ private:
                 return;
             }
         }
+        
+        if (midiOut_)
+        {
+            midiOut_->sendMessageNow(msg);
+        }
 
         if (timestampOutput_)
         {
@@ -664,6 +671,34 @@ private:
 #endif
                 break;
             }
+            case PASSTHROUGH:
+            {
+                midiOut_ = nullptr;
+                midiOutName_ = cmd.opts_[0];
+                int index = MidiOutput::getDevices().indexOf(midiOutName_);
+                if (index >= 0)
+                {
+                    midiOut_ = MidiOutput::openDevice(index);
+                }
+                else
+                {
+                    StringArray devices = MidiOutput::getDevices();
+                    for (int i = 0; i < devices.size(); ++i)
+                    {
+                        if (devices[i].containsIgnoreCase(midiOutName_))
+                        {
+                            midiOut_ = MidiOutput::openDevice(i);
+                            midiOutName_ = devices[i];
+                            break;
+                        }
+                    }
+                }
+                if (midiOut_ == nullptr)
+                {
+                    std::cerr << "Couldn't find MIDI output port \"" << midiOutName_ << "\"" << std::endl;
+                }
+                break;
+            }
             case TXTFILE:
             {
                 String path(cmd.opts_[0]);
@@ -848,6 +883,8 @@ private:
     String midiInName_;
     ScopedPointer<MidiInput> midiIn_;
     String fullMidiInName_;
+    String midiOutName_;
+    ScopedPointer<MidiOutput> midiOut_;
     ApplicationCommand currentCommand_;
 };
 
