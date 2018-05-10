@@ -188,7 +188,7 @@ public:
         {
             std::cerr << "MIDI input port \"" << fullMidiInName_ << "\" got disconnected, waiting." << std::endl;
             
-            fullMidiInName_ = String::empty;
+            fullMidiInName_ = String();
             midiIn_ = nullptr;
         }
         else if ((midiInName_.isNotEmpty() && midiIn_ == nullptr))
