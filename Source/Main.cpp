@@ -139,7 +139,7 @@ public:
         commands_.add({"spp",   "song-position",    SONG_POSITION,      0, "",               "Show Song Position Pointer"});
         commands_.add({"ss",    "song-select",      SONG_SELECT,        0, "",               "Show Song Select"});
         commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
-        commands_.add({"hook",   "",                HOOK,              -1, "",               "Hook Command to Receive"});
+        commands_.add({"hook",   "",                HOOK,               1, "",               "Hook Command to Receive"});
         
         timestampOutput_ = false;
         noteNumbersOutput_ = false;
@@ -233,7 +233,7 @@ private:
     StringArray parseLineAsParameters(const String& line)
     {
         StringArray parameters;
-        if (!line.startsWith("#"))
+        if (!line.startsWith("#") && line.trim().isNotEmpty())
         {
             StringArray tokens;
             tokens.addTokens(line, true);
@@ -342,9 +342,11 @@ private:
         file.readLines(lines);
         for (String line : lines)
         {
-            parameters.addArray(parseLineAsParameters(line));
+            StringArray params = parseLineAsParameters(line);
+            if (params.size() > 0) {
+                parameters.addArray(params);
+            }
         }
-        
         parseParameters(parameters);
     }
     
@@ -694,10 +696,6 @@ private:
                 if (!tryToConnectMidiInput())
                 {
                     std::cerr << "Couldn't find MIDI input port \"" << midiInName_ << "\", waiting." << std::endl;
-                }
-                else
-                {
-                    std::cerr << "Oh hell yeah! We're rollin'!" << std::endl;
                 }
                 break;
             }
