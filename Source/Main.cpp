@@ -271,8 +271,12 @@ private:
         
         if (msg.isController()) {
             for (Hook h : hooks_) {
-                if ((h.msgType_ == CONTROL_CHANGE) && (h.channel_ == msg.getChannel()) && (h.controller_ == msg.getControllerNumber())) {
+                if ((h.msgType_    == CONTROL_CHANGE) &&
+                    (h.channel_    == msg.getChannel()) &&
+                    (h.controller_ == msg.getControllerNumber()) &&
+                    (h.value_      == msg.getControllerValue())) {
                     handleHook(h);
+                    break;
                 }
             }
         }
@@ -722,7 +726,7 @@ private:
                 
                 if (bits.size() == 4) {
                     h.command_ = bits[3];
-                } else if (bits.size() == 4) {
+                } else if (bits.size() == 5) {
                     h.value_   = bits[3].getIntValue();
                     h.command_ = bits[4];
                 }
