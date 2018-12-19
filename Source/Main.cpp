@@ -18,6 +18,7 @@
 #include "JuceHeader.h"
 
 #include <sstream>
+#include <unistd.h>
 
 enum CommandIndex
 {
@@ -54,7 +55,8 @@ enum CommandIndex
     TIME_CODE,
     SONG_POSITION,
     SONG_SELECT,
-    TUNE_REQUEST
+    TUNE_REQUEST,
+    HOOK
 };
 
 static const int DEFAULT_OCTAVE_MIDDLE_C = 3;
@@ -84,6 +86,14 @@ struct ApplicationCommand
     String optionsDescription_;
     String commandDescription_;
     StringArray opts_;
+};
+
+struct Hook {
+    CommandIndex  msgType_;
+    int channel_;
+    int controller_;
+    int value_;
+    String command_;
 };
 
 inline float sign(float value)
@@ -129,6 +139,7 @@ public:
         commands_.add({"spp",   "song-position",    SONG_POSITION,      0, "",               "Show Song Position Pointer"});
         commands_.add({"ss",    "song-select",      SONG_SELECT,        0, "",               "Show Song Select"});
         commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
+        commands_.add({"hook",   "",                HOOK,              -1, "",               "Hook Command to Receive"});
         
         timestampOutput_ = false;
         noteNumbersOutput_ = false;
@@ -240,6 +251,33 @@ private:
         if (currentCommand_.expectedOptions_ < 0)
         {
             executeCommand(currentCommand_);
+        }
+    }
+    
+    void handleHook(Hook& hook)
+    {
+        const char *command = hook.command_.toRawUTF8();
+        
+        std::cerr << "Running hook command:" << hook.command_ << "\r\n";
+        int result = system(command);
+        std::cerr << "System said: " << result << "\r\n";
+    }
+    
+    void handleMessageIn(const MidiMessage& msg)
+    {
+        if (hooks_.size() < 1) {
+            return;
+        }
+        
+        if (msg.isController()) {
+            for (Hook h : hooks_) {
+                if ((h.msgType_ == CONTROL_CHANGE) && (h.channel_ == msg.getChannel()) && (h.controller_ == msg.getControllerNumber())) {
+                    handleHook(h);
+                }
+            }
+        }
+        else if (msg.isProgramChange()) {
+            
         }
     }
     
@@ -357,6 +395,9 @@ private:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isProgramChange() &&
                                     (cmd.opts_.isEmpty() || (msg.getProgramChangeNumber() == asDecOrHex7BitValue(cmd.opts_[0])));
+                        
+                        // Check for hook
+                        handleMessageIn(msg);
                         break;
                     case CHANNEL_PRESSURE:
                         filtered |= checkChannel(msg, channel) &&
@@ -456,11 +497,16 @@ private:
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "control-change   " << output7Bit(msg.getControllerNumber()).paddedLeft(' ', 3) << " "
                                              << output7Bit(msg.getControllerValue()).paddedLeft(' ', 3) << std::endl;
+            // Check for hook
+            handleMessageIn(msg);
         }
         else if (msg.isProgramChange())
         {
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "program-change   " << output7Bit(msg.getProgramChangeNumber()).paddedLeft(' ', 7) << std::endl;
+            
+            // Check for hook
+            handleMessageIn(msg);
         }
         else if (msg.isChannelPressure())
         {
@@ -645,6 +691,44 @@ private:
                 {
                     std::cerr << "Couldn't find MIDI input port \"" << midiInName_ << "\", waiting." << std::endl;
                 }
+                else
+                {
+                    std::cerr << "Oh hell yeah! We're rollin'!" << std::endl;
+                }
+                break;
+            }
+            case HOOK:
+            {
+                // example: "cc 1 4 5 /some/command"
+                //std::cerr << cmd.opts_[0];
+                StringArray bits = parseLineAsParameters(cmd.opts_[0]);
+                Hook h;
+                
+                if (bits.size() < 4) {
+                    std::cerr << "Invalid hook: " << cmd.opts_[0];
+                    break;
+                }
+                
+                if (bits[0] == "cc") {
+                    h.msgType_ = CONTROL_CHANGE;
+                } else if (bits[0] == "pc") {
+                    h.msgType_ = PROGRAM_CHANGE;
+                } else {
+                    h.msgType_ = NONE;
+                }
+                
+                h.channel_    = bits[1].getIntValue();
+                h.controller_ = bits[2].getIntValue();
+                
+                if (bits.size() == 4) {
+                    h.command_ = bits[3];
+                } else if (bits.size() == 4) {
+                    h.value_   = bits[3].getIntValue();
+                    h.command_ = bits[4];
+                }
+                
+                hooks_.add(h);
+                std::cerr << "Added a Hook! " << cmd.opts_[0] << "\r\n";
                 break;
             }
             case VIRTUAL:
@@ -886,6 +970,7 @@ private:
     String midiOutName_;
     ScopedPointer<MidiOutput> midiOut_;
     ApplicationCommand currentCommand_;
+    Array<Hook> hooks_;
 };
 
 START_JUCE_APPLICATION (receiveMidiApplication)
