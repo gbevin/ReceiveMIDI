@@ -944,6 +944,10 @@ private:
             }
         }
         std::cout << line << std::endl << std::endl;
+        std::cout << "Hooks allow the execution of any system command any time a speific message is" << std::endl;
+        std::cout << "received. Usage:" << std::endl;
+        std::cout << "Control Change - \"cc [channel] [controller] [controller value]\"" << std::endl;
+        std::cout << "Program Change - \"pc [channel] [value]\"" << std::endl;
         std::cout << "By default, numbers are interpreted in the decimal system, this can be changed" << std::endl
                   << "to hexadecimal by sending the \"hex\" command. Additionally, by suffixing a " << std::endl
                   << "number with \"M\" or \"H\", it will be interpreted as a decimal or hexadecimal" << std::endl
