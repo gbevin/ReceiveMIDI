@@ -707,7 +707,7 @@ private:
                 Hook h;
                 
                 if (bits.size() < 4) {
-                    std::cerr << "Invalid hook: " << cmd.opts_[0];
+                    std::cerr << "Invalid hook: " << cmd.opts_[0] << "\r\n";
                     break;
                 }
                 
