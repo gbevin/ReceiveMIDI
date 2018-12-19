@@ -258,9 +258,9 @@ private:
     {
         const char *command = hook.command_.toRawUTF8();
         
-        std::cerr << "Running hook command:" << hook.command_ << "\r\n";
+        std::cerr << "Running hook command:" << hook.command_ << std::endl;
         int result = system(command);
-        std::cerr << "System said: " << result << "\r\n";
+        std::cerr << "System said: " << result << std::endl;
     }
     
     void handleMessageIn(const MidiMessage& msg)
@@ -707,7 +707,7 @@ private:
                 Hook h;
                 
                 if (bits.size() < 4) {
-                    std::cerr << "Invalid hook: " << cmd.opts_[0] << "\r\n";
+                    std::cerr << "Invalid hook: " << cmd.opts_[0] << std::endl;
                     break;
                 }
                 
@@ -730,7 +730,7 @@ private:
                 }
                 
                 hooks_.add(h);
-                std::cerr << "Added a Hook! " << cmd.opts_[0] << "\r\n";
+                std::cerr << "Added a Hook! " << cmd.opts_[0] << std::endl;
                 break;
             }
             case VIRTUAL:
