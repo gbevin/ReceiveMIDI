@@ -281,7 +281,14 @@ private:
             }
         }
         else if (msg.isProgramChange()) {
-            
+            for (Hook h : hooks_) {
+                if ((h.msgType_    == PROGRAM_CHANGE) &&
+                    (h.channel_    == msg.getChannel()) &&
+                    (h.value_      == msg.getProgramChangeNumber())) {
+                    handleHook(h);
+                    break;
+                }
+            }
         }
     }
     
@@ -713,6 +720,7 @@ private:
                 
                 if (bits[0] == "cc") {
                     h.msgType_ = CONTROL_CHANGE;
+                    h.controller_ = bits[2].getIntValue();
                 } else if (bits[0] == "pc") {
                     h.msgType_ = PROGRAM_CHANGE;
                 } else {
@@ -720,11 +728,13 @@ private:
                 }
                 
                 h.channel_    = bits[1].getIntValue();
-                h.controller_ = bits[2].getIntValue();
                 
-                if (bits.size() == 4) {
+                if (bits.size() == 4 && h.msgType_ == PROGRAM_CHANGE) { //PC
+                    h.value_ = bits[2].getIntValue(); //For PC types the value is the PROGRAM_CHANGE_NUMBER
                     h.command_ = bits[3];
-                } else if (bits.size() == 5) {
+                } else if (bits.size() == 4 && h.msgType_ == CONTROL_CHANGE) { //CC without value
+                    h.command_ = bits[3];
+                } else if (bits.size() == 5 && h.msgType_ == CONTROL_CHANGE) { //CC with value
                     h.value_   = bits[3].getIntValue();
                     h.command_ = bits[4];
                 }
