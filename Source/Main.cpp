@@ -18,7 +18,6 @@
 #include "JuceHeader.h"
 
 #include <sstream>
-#include <unistd.h>
 
 enum CommandIndex
 {
@@ -290,6 +289,17 @@ private:
                 }
             }
         }
+        else if (msg.isNoteOn() || msg.isNoteOff()) {
+            for (Hook h : hooks_) {
+                if ((h.msgType_    == (msg.isNoteOn() ? NOTE_ON : NOTE_OFF)) &&
+                    (h.channel_    == msg.getChannel()) &&
+                    (h.controller_ == msg.getNoteNumber()) &&
+                    (h.value_      == msg.getVelocity())) {
+                    handleHook(h);
+                    break;
+                }
+            }
+        }
     }
     
     void parseParameters(StringArray& parameters)
@@ -494,11 +504,13 @@ private:
         {
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "note-on         " << outputNote(msg) << " " << output7Bit(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+            handleMessageIn(msg);
         }
         else if (msg.isNoteOff())
         {
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "note-off        " << outputNote(msg) << " " << output7Bit(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+            handleMessageIn(msg);
         }
         else if (msg.isAftertouch())
         {
@@ -718,29 +730,45 @@ private:
                     break;
                 }
                 
+                //CONTROL CHANGE
                 if (bits[0] == "cc") {
-                    h.msgType_ = CONTROL_CHANGE;
+                    h.msgType_    = CONTROL_CHANGE;
                     h.controller_ = bits[2].getIntValue();
+                    
+                    if (bits.size() == 4) { //CC without value
+                        h.command_ = bits[3];
+                    } else if (bits.size() == 5) { //CC with value
+                        h.value_   = bits[3].getIntValue();
+                        h.command_ = bits[4];
+                    }
+                    
+                //PROGRAM CHANGE
                 } else if (bits[0] == "pc") {
                     h.msgType_ = PROGRAM_CHANGE;
+                    h.value_   = bits[2].getIntValue(); //For PC types the value is the PROGRAM_CHANGE_NUMBER
+                    h.command_ = bits[3];
+                    
+                //NOTE ON
+                } else if (bits[0] == "non") {
+                    h.msgType_    = NOTE_ON;
+                    h.controller_ = bits[2].getIntValue();
+                    h.value_      = bits[3].getIntValue();
+                    h.command_    = bits[4];
+                    
+                //NOTE OFF
+                } else if (bits[0] == "nof") {
+                    h.msgType_    = NOTE_OFF;
+                    h.controller_ = bits[2].getIntValue();
+                    h.value_      = bits[3].getIntValue();
+                    h.command_    = bits[4];
                 } else {
                     h.msgType_ = NONE;
                 }
                 
                 h.channel_    = bits[1].getIntValue();
                 
-                if (bits.size() == 4 && h.msgType_ == PROGRAM_CHANGE) { //PC
-                    h.value_ = bits[2].getIntValue(); //For PC types the value is the PROGRAM_CHANGE_NUMBER
-                    h.command_ = bits[3];
-                } else if (bits.size() == 4 && h.msgType_ == CONTROL_CHANGE) { //CC without value
-                    h.command_ = bits[3];
-                } else if (bits.size() == 5 && h.msgType_ == CONTROL_CHANGE) { //CC with value
-                    h.value_   = bits[3].getIntValue();
-                    h.command_ = bits[4];
-                }
-                
                 hooks_.add(h);
-                std::cerr << "Added a Hook! " << cmd.opts_[0] << std::endl;
+                std::cout << "Added a Hook! " << cmd.opts_[0] << std::endl;
                 break;
             }
             case VIRTUAL:
@@ -956,8 +984,11 @@ private:
         std::cout << line << std::endl << std::endl;
         std::cout << "Hooks allow the execution of any system command any time a speific message is" << std::endl;
         std::cout << "received. Usage:" << std::endl;
-        std::cout << "Control Change - \"cc [channel] [controller] [controller value]\"" << std::endl;
-        std::cout << "Program Change - \"pc [channel] [value]\"" << std::endl;
+        std::cout << "Control Change - \"cc [channel] [controller] [controller value] [command]\"" << std::endl;
+        std::cout << "Program Change - \"pc [channel] [value] [command]\"" << std::endl;
+        std::cout << "Note On - \"non [channel] [note] [value] [command]\"" << std::endl;
+        std::cout << "Note Off - \"nof [channel] [note] [value] [command]\"" << std::endl;
+        std::cout << std::endl << std::endl;
         std::cout << "By default, numbers are interpreted in the decimal system, this can be changed" << std::endl
                   << "to hexadecimal by sending the \"hex\" command. Additionally, by suffixing a " << std::endl
                   << "number with \"M\" or \"H\", it will be interpreted as a decimal or hexadecimal" << std::endl
