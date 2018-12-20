@@ -762,7 +762,8 @@ private:
                     h.value_      = bits[3].getIntValue();
                     h.command_    = bits[4];
                 } else {
-                    h.msgType_ = NONE;
+                    std::cerr << "NOTE: The type of hook \"" << bits[0] << "\" is not yet supported." << std::endl;
+                    break;
                 }
                 
                 h.channel_    = bits[1].getIntValue();
