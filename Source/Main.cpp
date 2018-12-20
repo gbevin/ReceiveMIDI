@@ -138,7 +138,7 @@ public:
         commands_.add({"spp",   "song-position",    SONG_POSITION,      0, "",               "Show Song Position Pointer"});
         commands_.add({"ss",    "song-select",      SONG_SELECT,        0, "",               "Show Song Select"});
         commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
-        commands_.add({"hook",   "",                HOOK,               1, "",               "Hook Command to Receive"});
+        commands_.add({"hook",   "",                HOOK,               1, "",               "Hook Command to a Received Message"});
         
         timestampOutput_ = false;
         noteNumbersOutput_ = false;
