@@ -984,7 +984,8 @@ private:
         }
         std::cout << line << std::endl << std::endl;
         std::cout << "Hooks allow the execution of any system command any time a speific message is" << std::endl;
-        std::cout << "received. Usage:" << std::endl;
+        std::cout << "received. Currently, only Control Change, Program Change, Note On and Note Off" << std::endl;
+	std::cout << "messages are supported. Usage:" << std::endl;
         std::cout << "Control Change - \"hook cc [channel] [controller] [controller value] [command]\"" << std::endl;
         std::cout << "Program Change - \"hook pc [channel] [value] [command]\"" << std::endl;
         std::cout << "Note On - \"hook non [channel] [note] [value] [command]\"" << std::endl;
