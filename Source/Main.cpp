@@ -257,9 +257,9 @@ private:
     {
         const char *command = hook.command_.toRawUTF8();
         
-        std::cerr << "Running hook command:" << hook.command_ << std::endl;
+        std::cout << "Running hook command:" << hook.command_ << std::endl;
         int result = system(command);
-        std::cerr << "System said: " << result << std::endl;
+        std::cout << "System said: " << result << std::endl;
     }
     
     void handleMessageIn(const MidiMessage& msg)
