@@ -235,11 +235,18 @@ private:
         return parameters;
     }
     
+    void executeCurrentCommand()
+    {
+        ApplicationCommand cmd = currentCommand_;
+        currentCommand_ = ApplicationCommand::Dummy();
+        executeCommand(cmd);
+    }
+
     void handleVarArgCommand()
     {
         if (currentCommand_.expectedOptions_ < 0)
         {
-            executeCommand(currentCommand_);
+            executeCurrentCommand();
         }
     }
     
@@ -285,7 +292,7 @@ private:
             // handle fixed arg commands
             if (currentCommand_.expectedOptions_ == 0)
             {
-                executeCommand(currentCommand_);
+                executeCurrentCommand();
             }
         }
         
