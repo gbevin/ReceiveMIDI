@@ -32,6 +32,7 @@ These are all the supported commands:
 ```
   dev   name           Set the name of the MIDI input port
   virt  (name)         Use virtual MIDI port with optional name (Linux/macOS)
+  pass  name           Set name of MIDI output port for MIDI pass-through
   list                 Lists the MIDI input ports
   file  path           Loads commands from the specified program file
   dec                  Interpret the next numbers as decimals by default
@@ -69,11 +70,11 @@ These are all the supported commands:
 
 Alternatively, you can use the following long versions of the commands:
 ```
-  device virtual decimal hexadecimal channel timestamp note-numbers
-  octave-middle-c note-on note-off poly-pressure control-change program-change
-  channel-pressure pitch-bend system-realtime continue active-sensing reset
-  system-common system-exclusive time-code song-position song-select
-  tune-request
+  device virtual pass-through decimal hexadecimal channel timestamp
+  note-numbers octave-middle-c note-on note-off poly-pressure control-change
+  program-change channel-pressure pitch-bend system-realtime continue
+  active-sensing reset system-common system-exclusive time-code song-position
+  song-select tune-request
 ```
 
 By default, numbers are interpreted in the decimal system, this can be changed to hexadecimal by sending the "hex" command.
