@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="U5JfXz" name="receivemidi" projectType="consoleapp" version="1.0.6"
+<JUCERPROJECT id="U5JfXz" name="receivemidi" projectType="consoleapp" version="1.0.7"
               bundleIdentifier="com.uwyn.receivemidi" includeBinaryInAppConfig="1"
               jucerVersion="5.4.1" companyName="Uwyn" companyWebsite="http://www.uwyn.com"
               companyEmail="info@uwyn.com" displaySplashScreen="1" reportAppUsage="1"
