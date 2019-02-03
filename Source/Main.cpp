@@ -170,7 +170,8 @@ public:
         }
         
         scriptEngine_.maximumExecutionTime = RelativeTime::days(365);
-        scriptEngine_.registerNativeObject("MIDI",  &scriptMidiMessage_);
+        scriptMidiMessage_ = new ScriptMidiMessageClass();
+        scriptEngine_.registerNativeObject("MIDI",  scriptMidiMessage_);
         scriptEngine_.registerNativeObject("OSC",   new ScriptOscClass());
         scriptEngine_.registerNativeObject("Util",  new ScriptUtilClass());
         
@@ -452,7 +453,7 @@ private:
 
         if (scriptCode_.isNotEmpty())
         {
-            scriptMidiMessage_.setMidiMessage(msg);
+            scriptMidiMessage_->setMidiMessage(msg);
             scriptEngine_.execute(scriptCode_);
         }
         
@@ -949,7 +950,7 @@ private:
     ApplicationCommand currentCommand_;
     JavascriptEngine scriptEngine_;
     String scriptCode_;
-    ScriptMidiMessageClass scriptMidiMessage_;
+    ScriptMidiMessageClass* scriptMidiMessage_;
 };
 
 START_JUCE_APPLICATION (receiveMidiApplication)
