@@ -128,14 +128,16 @@ Receive all messages from LinnStrument.
 Through the JavaScript feature, each note on will execute the `test.sh` command with the note number as argument.
 
 ```
-receivemidi dev linnstrument js "if (MIDI.isNoteOn()) Util.command('/path/to/test.sh ' + MIDI.noteNumber());"
+receivemidi dev linnstrument
+  js "if (MIDI.isNoteOn()) Util.command('/path/to/test.sh ' + MIDI.noteNumber());"
 ```
 
 Receive all messages from LinnStrument and don't print them out.
 Through the JavaScript feature, each note on message will send an OSC message to 127.0.0.1:12800.
 
 ```
-receivemidi dev linnstrument quiet javascript "if (MIDI.isNoteOn()) OSC.connect('127.0.0.1', 12800).send('/note-on', MIDI.noteNumber(), MIDI.velocity());"
+receivemidi dev linnstrument quiet
+  javascript "if (MIDI.isNoteOn()) OSC.connect('127.0.0.1', 12800).send('/note-on', MIDI.noteNumber());"
 ```
 
 ## Text File Format
