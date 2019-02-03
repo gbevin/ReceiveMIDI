@@ -51,6 +51,7 @@
 #define JUCE_MODULE_AVAILABLE_juce_core                 1
 #define JUCE_MODULE_AVAILABLE_juce_data_structures      1
 #define JUCE_MODULE_AVAILABLE_juce_events               1
+#define JUCE_MODULE_AVAILABLE_juce_osc                  1
 
 #define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED 1
 

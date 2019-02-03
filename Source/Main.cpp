@@ -17,6 +17,10 @@
  */
 #include "JuceHeader.h"
 
+#include "ScriptMidiMessageClass.h"
+#include "ScriptOscClass.h"
+#include "ScriptUtilClass.h"
+
 #include <sstream>
 
 enum CommandIndex
@@ -54,7 +58,10 @@ enum CommandIndex
     TIME_CODE,
     SONG_POSITION,
     SONG_SELECT,
-    TUNE_REQUEST
+    TUNE_REQUEST,
+    QUIET,
+    JAVASCRIPT,
+    JAVASCRIPT_FILE
 };
 
 static const int DEFAULT_OCTAVE_MIDDLE_C = 3;
@@ -129,11 +136,15 @@ public:
         commands_.add({"spp",   "song-position",    SONG_POSITION,      0, "",               "Show Song Position Pointer"});
         commands_.add({"ss",    "song-select",      SONG_SELECT,        0, "",               "Show Song Select"});
         commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
-        
+        commands_.add({"q",     "quiet",            QUIET,              0, "",               "Don't show the received messages on standard output"});
+        commands_.add({"js",    "javascript",       JAVASCRIPT,         1, "code",           "Execute this script for each received MIDI message"});
+        commands_.add({"jsf",   "javascript-file",  JAVASCRIPT_FILE,    1, "path",           "Execute the script in this file for each message"});
+
         timestampOutput_ = false;
         noteNumbersOutput_ = false;
         octaveMiddleC_ = DEFAULT_OCTAVE_MIDDLE_C;
         useHexadecimalsByDefault_ = false;
+        quiet_ = false;
         currentCommand_ = ApplicationCommand::Dummy();
     }
     
@@ -157,6 +168,11 @@ public:
             systemRequestedQuit();
             return;
         }
+        
+        scriptEngine_.maximumExecutionTime = RelativeTime::days(365);
+        scriptEngine_.registerNativeObject("MIDI",  &scriptMidiMessage_);
+        scriptEngine_.registerNativeObject("OSC",   new ScriptOscClass());
+        scriptEngine_.registerNativeObject("Util",  new ScriptUtilClass());
         
         parseParameters(cmdLineParams);
         
@@ -434,6 +450,20 @@ private:
             midiOut_->sendMessageNow(msg);
         }
 
+        if (scriptCode_.isNotEmpty())
+        {
+            scriptMidiMessage_.setMidiMessage(msg);
+            scriptEngine_.execute(scriptCode_);
+        }
+        
+        if (!quiet_)
+        {
+            outputMessage(msg);
+        }
+    }
+    
+    void outputMessage(const MidiMessage& msg)
+    {
         if (timestampOutput_)
         {
             Time t = Time::getCurrentTime();
@@ -735,6 +765,26 @@ private:
             case OCTAVE_MIDDLE_C:
                 octaveMiddleC_ = asDecOrHex7BitValue(cmd.opts_[0]);
                 break;
+            case QUIET:
+                quiet_ = true;
+                break;
+            case JAVASCRIPT:
+                scriptCode_ = cmd.opts_[0];
+                break;
+            case JAVASCRIPT_FILE:
+            {
+                String path(cmd.opts_[0]);
+                File file = File::getCurrentWorkingDirectory().getChildFile(path);
+                if (file.existsAsFile())
+                {
+                    scriptCode_ = file.loadFileAsString();
+                }
+                else
+                {
+                    std::cerr << "Couldn't find file \"" << path << "\"" << std::endl;
+                }
+                break;
+            }
             default:
                 filterCommands_.add(cmd);
                 break;
@@ -866,7 +916,7 @@ private:
         }
         std::cout << line << std::endl << std::endl;
         std::cout << "By default, numbers are interpreted in the decimal system, this can be changed" << std::endl
-                  << "to hexadecimal by sending the \"hex\" command. Additionally, by suffixing a " << std::endl
+                  << "to hexadecimal by sending the \"hex\" command. Additionally, by suffixing a" << std::endl
                   << "number with \"M\" or \"H\", it will be interpreted as a decimal or hexadecimal" << std::endl
                   << "respectively." << std::endl;
         std::cout << std::endl;
@@ -876,9 +926,12 @@ private:
         std::cout << std::endl;
         std::cout << "Where notes can be provided as arguments, they can also be written as note" << std::endl
                   << "names, by default from C-2 to G8 which corresponds to note numbers 0 to 127." << std::endl
-                  << "By setting the octave for middle C, the note name range can be changed. " << std::endl
-                  << "Sharps can be added by using the '#' symbol after the note letter, and flats" << std::endl
-                  << "by using the letter 'b'. " << std::endl;
+                  << "By setting the octave for middle C, the note name range can be changed." << std::endl
+                  << "Sharps can be added by using the \"#\" symbol after the note letter, and flats" << std::endl
+                  << "by using the letter \"b\"." << std::endl;
+        std::cout << std::endl;
+        std::cout << "For details on how to use the \"javascript\" and \"javascript-file\" commands," << std::endl
+                  << "please refer to the JAVASCRIPT.md documentation file." << std::endl;
     }
     
     Array<ApplicationCommand> commands_;
@@ -887,12 +940,16 @@ private:
     bool noteNumbersOutput_;
     int octaveMiddleC_;
     bool useHexadecimalsByDefault_;
+    bool quiet_;
     String midiInName_;
     ScopedPointer<MidiInput> midiIn_;
     String fullMidiInName_;
     String midiOutName_;
     ScopedPointer<MidiOutput> midiOut_;
     ApplicationCommand currentCommand_;
+    JavascriptEngine scriptEngine_;
+    String scriptCode_;
+    ScriptMidiMessageClass scriptMidiMessage_;
 };
 
 START_JUCE_APPLICATION (receiveMidiApplication)

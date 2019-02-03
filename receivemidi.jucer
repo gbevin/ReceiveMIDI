@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="U5JfXz" name="receivemidi" projectType="consoleapp" version="1.0.7"
+<JUCERPROJECT id="U5JfXz" name="receivemidi" projectType="consoleapp" version="1.1.0"
               bundleIdentifier="com.uwyn.receivemidi" includeBinaryInAppConfig="1"
               jucerVersion="5.4.1" companyName="Uwyn" companyWebsite="http://www.uwyn.com"
               companyEmail="info@uwyn.com" displaySplashScreen="1" reportAppUsage="1"
@@ -8,6 +8,18 @@
   <MAINGROUP id="qBrt8O" name="receivemidi">
     <GROUP id="{77373791-FBB9-12BE-4AF0-C617C2C69BC4}" name="Source">
       <FILE id="hGRRus" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="M3By28" name="ScriptMidiMessageClass.cpp" compile="1" resource="0"
+            file="Source/ScriptMidiMessageClass.cpp"/>
+      <FILE id="RLieYC" name="ScriptMidiMessageClass.h" compile="0" resource="0"
+            file="Source/ScriptMidiMessageClass.h"/>
+      <FILE id="yQRtR6" name="ScriptOscClass.cpp" compile="1" resource="0"
+            file="Source/ScriptOscClass.cpp"/>
+      <FILE id="IQ6xtb" name="ScriptOscClass.h" compile="0" resource="0"
+            file="Source/ScriptOscClass.h"/>
+      <FILE id="RSMFN6" name="ScriptUtilClass.cpp" compile="1" resource="0"
+            file="Source/ScriptUtilClass.cpp"/>
+      <FILE id="uuu1PF" name="ScriptUtilClass.h" compile="0" resource="0"
+            file="Source/ScriptUtilClass.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
@@ -24,6 +36,7 @@
         <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015">
@@ -39,6 +52,7 @@
         <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2015>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraCompilerFlags="-mtune=core2 -march=core2"
@@ -54,6 +68,7 @@
         <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
@@ -63,6 +78,7 @@
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_osc" showAllCode="1" useLocalCopy="1" useGlobalPath="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_USE_XSHM="disabled" JUCE_USE_XRENDER="disabled" JUCE_USE_XCURSOR="disabled"
                JUCE_USE_CURL="0"/>

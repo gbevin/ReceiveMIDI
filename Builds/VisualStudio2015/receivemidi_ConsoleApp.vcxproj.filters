@@ -140,6 +140,12 @@
     <Filter Include="JUCE Modules\juce_events">
       <UniqueIdentifier>{D27DC92D-5BEB-9294-DCD1-81D54E245AD5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="JUCE Modules\juce_osc\osc">
+      <UniqueIdentifier>{EEE9B92C-AD26-4BEA-4D95-3F859090EA9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JUCE Modules\juce_osc">
+      <UniqueIdentifier>{B1DE8DB1-C00A-12C0-D690-8B3C9504A60A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="JUCE Modules">
       <UniqueIdentifier>{FE955B6B-68AC-AA07-70D8-2413F6DB65C8}</UniqueIdentifier>
     </Filter>
@@ -149,6 +155,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Main.cpp">
+      <Filter>receivemidi\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\ScriptMidiMessageClass.cpp">
+      <Filter>receivemidi\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\ScriptOscClass.cpp">
+      <Filter>receivemidi\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\ScriptUtilClass.cpp">
       <Filter>receivemidi\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_audio_basics\buffers\juce_AudioChannelSet.cpp">
@@ -733,6 +748,33 @@
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_events\juce_events.mm">
       <Filter>JUCE Modules\juce_events</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCAddress.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCArgument.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCBundle.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCMessage.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCReceiver.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCSender.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCTimeTag.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCTypes.cpp">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\modules\juce_osc\juce_osc.cpp">
+      <Filter>JUCE Modules\juce_osc</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_audio_basics.cpp">
       <Filter>JUCE Library Code</Filter>
     </ClCompile>
@@ -748,8 +790,20 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_events.cpp">
       <Filter>JUCE Library Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\include_juce_osc.cpp">
+      <Filter>JUCE Library Code</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\ScriptMidiMessageClass.h">
+      <Filter>receivemidi\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ScriptOscClass.h">
+      <Filter>receivemidi\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ScriptUtilClass.h">
+      <Filter>receivemidi\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h">
       <Filter>JUCE Modules\juce_audio_basics\audio_play_head</Filter>
     </ClInclude>
@@ -1436,6 +1490,36 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_events\juce_events.h">
       <Filter>JUCE Modules\juce_events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCAddress.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCArgument.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCBundle.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCMessage.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCReceiver.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCSender.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCTimeTag.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\osc\juce_OSCTypes.h">
+      <Filter>JUCE Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\modules\juce_osc\juce_osc.h">
+      <Filter>JUCE Modules\juce_osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\juce_osc.h">
+      <Filter>JUCE Modules\juce_osc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\AppConfig.h">
       <Filter>JUCE Library Code</Filter>
