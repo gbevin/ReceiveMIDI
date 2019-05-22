@@ -257,7 +257,7 @@ private:
     {
         const char *command = hook.command_.toRawUTF8();
         
-        std::cerr << "Running hook command:" << hook.command_ << std::endl;
+        std::cerr << "Running hook command: " << hook.command_ << std::endl;
         int result = system(command);
         std::cerr << "System said: " << result << std::endl;
     }
@@ -417,11 +417,7 @@ private:
                     case PROGRAM_CHANGE:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isProgramChange() &&
-                                    (cmd.opts_.isEmpty() || (msg.getProgramChangeNumber() == asDecOrHex7BitValue(cmd.opts_[0])));
-                        
-                        // Check for hook
-                        handleMessageIn(msg);
-                        break;
+                                    (cmd.opts_.isEmpty() || (msg.getProgramChangeNumber() == asDecOrHex7BitValue(cmd.opts_[0])));                        break;
                     case CHANNEL_PRESSURE:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isChannelPressure();
