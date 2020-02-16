@@ -146,7 +146,6 @@ public:
         commands_.add({"ss",    "song-select",      SONG_SELECT,        0, "",               "Show Song Select"});
         commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
         commands_.add({"hook",   "",                HOOK,               1, "",               "Hook Command to a Received Message"});
-        
         commands_.add({"q",     "quiet",            QUIET,              0, "",               "Don't show the received messages on standard output"});
         commands_.add({"js",    "javascript",       JAVASCRIPT,         1, "code",           "Execute this script for each received MIDI message"});
         commands_.add({"jsf",   "javascript-file",  JAVASCRIPT_FILE,    1, "path",           "Execute the script in this file for each message"});
