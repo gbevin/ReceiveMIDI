@@ -59,6 +59,7 @@ enum CommandIndex
     SONG_POSITION,
     SONG_SELECT,
     TUNE_REQUEST,
+    HOOK,
     QUIET,
     JAVASCRIPT,
     JAVASCRIPT_FILE
@@ -91,6 +92,14 @@ struct ApplicationCommand
     String optionsDescription_;
     String commandDescription_;
     StringArray opts_;
+};
+
+struct Hook {
+    CommandIndex  msgType_;
+    int channel_;
+    int controller_;
+    int value_;
+    String command_;
 };
 
 inline float sign(float value)
@@ -136,6 +145,7 @@ public:
         commands_.add({"spp",   "song-position",    SONG_POSITION,      0, "",               "Show Song Position Pointer"});
         commands_.add({"ss",    "song-select",      SONG_SELECT,        0, "",               "Show Song Select"});
         commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
+        commands_.add({"hook",   "",                HOOK,               1, "",               "Hook Command to a Received Message"});
         commands_.add({"q",     "quiet",            QUIET,              0, "",               "Don't show the received messages on standard output"});
         commands_.add({"js",    "javascript",       JAVASCRIPT,         1, "code",           "Execute this script for each received MIDI message"});
         commands_.add({"jsf",   "javascript-file",  JAVASCRIPT_FILE,    1, "path",           "Execute the script in this file for each message"});
@@ -239,7 +249,7 @@ private:
     StringArray parseLineAsParameters(const String& line)
     {
         StringArray parameters;
-        if (!line.startsWith("#"))
+        if (!line.startsWith("#") && line.trim().isNotEmpty())
         {
             StringArray tokens;
             tokens.addTokens(line, true);
@@ -264,6 +274,55 @@ private:
         if (currentCommand_.expectedOptions_ < 0)
         {
             executeCurrentCommand();
+        }
+    }
+    
+    void handleHook(Hook& hook)
+    {
+        const char *command = hook.command_.toRawUTF8();
+        
+        std::cout << "Running hook command: " << hook.command_ << std::endl;
+        int result = system(command);
+        std::cout << "System said: " << result << std::endl;
+    }
+    
+    void handleMessageIn(const MidiMessage& msg)
+    {
+        if (hooks_.size() < 1) {
+            return;
+        }
+        
+        if (msg.isController()) {
+            for (Hook h : hooks_) {
+                if ((h.msgType_    == CONTROL_CHANGE) &&
+                    (h.channel_    == msg.getChannel()) &&
+                    (h.controller_ == msg.getControllerNumber()) &&
+                    (h.value_      == msg.getControllerValue())) {
+                    handleHook(h);
+                    break;
+                }
+            }
+        }
+        else if (msg.isProgramChange()) {
+            for (Hook h : hooks_) {
+                if ((h.msgType_    == PROGRAM_CHANGE) &&
+                    (h.channel_    == msg.getChannel()) &&
+                    (h.value_      == msg.getProgramChangeNumber())) {
+                    handleHook(h);
+                    break;
+                }
+            }
+        }
+        else if (msg.isNoteOn() || msg.isNoteOff()) {
+            for (Hook h : hooks_) {
+                if ((h.msgType_    == (msg.isNoteOn() ? NOTE_ON : NOTE_OFF)) &&
+                    (h.channel_    == msg.getChannel()) &&
+                    (h.controller_ == msg.getNoteNumber()) &&
+                    (h.value_      == msg.getVelocity())) {
+                    handleHook(h);
+                    break;
+                }
+            }
         }
     }
     
@@ -324,9 +383,11 @@ private:
         file.readLines(lines);
         for (String line : lines)
         {
-            parameters.addArray(parseLineAsParameters(line));
+            StringArray params = parseLineAsParameters(line);
+            if (params.size() > 0) {
+                parameters.addArray(params);
+            }
         }
-        
         parseParameters(parameters);
     }
     
@@ -380,8 +441,7 @@ private:
                     case PROGRAM_CHANGE:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isProgramChange() &&
-                                    (cmd.opts_.isEmpty() || (msg.getProgramChangeNumber() == asDecOrHex7BitValue(cmd.opts_[0])));
-                        break;
+                                    (cmd.opts_.isEmpty() || (msg.getProgramChangeNumber() == asDecOrHex7BitValue(cmd.opts_[0])));                        break;
                     case CHANNEL_PRESSURE:
                         filtered |= checkChannel(msg, channel) &&
                                     msg.isChannelPressure();
@@ -478,11 +538,13 @@ private:
         {
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "note-on         " << outputNote(msg) << " " << output7Bit(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+            handleMessageIn(msg);
         }
         else if (msg.isNoteOff())
         {
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "note-off        " << outputNote(msg) << " " << output7Bit(msg.getVelocity()).paddedLeft(' ', 3) << std::endl;
+            handleMessageIn(msg);
         }
         else if (msg.isAftertouch())
         {
@@ -494,11 +556,16 @@ private:
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "control-change   " << output7Bit(msg.getControllerNumber()).paddedLeft(' ', 3) << " "
                                              << output7Bit(msg.getControllerValue()).paddedLeft(' ', 3) << std::endl;
+            // Check for hook
+            handleMessageIn(msg);
         }
         else if (msg.isProgramChange())
         {
             std::cout << "channel "  << outputChannel(msg) << "   " <<
                          "program-change   " << output7Bit(msg.getProgramChangeNumber()).paddedLeft(' ', 7) << std::endl;
+            
+            // Check for hook
+            handleMessageIn(msg);
         }
         else if (msg.isChannelPressure())
         {
@@ -683,6 +750,60 @@ private:
                 {
                     std::cerr << "Couldn't find MIDI input port \"" << midiInName_ << "\", waiting." << std::endl;
                 }
+                break;
+            }
+            case HOOK:
+            {
+                // example: "cc 1 4 5 /some/command"
+                //std::cerr << cmd.opts_[0];
+                StringArray bits = parseLineAsParameters(cmd.opts_[0]);
+                Hook h;
+                
+                if (bits.size() < 4) {
+                    std::cerr << "Invalid hook: " << cmd.opts_[0] << std::endl;
+                    break;
+                }
+                
+                //CONTROL CHANGE
+                if (bits[0] == "cc") {
+                    h.msgType_    = CONTROL_CHANGE;
+                    h.controller_ = bits[2].getIntValue();
+                    
+                    if (bits.size() == 4) { //CC without value
+                        h.command_ = bits[3];
+                    } else if (bits.size() == 5) { //CC with value
+                        h.value_   = bits[3].getIntValue();
+                        h.command_ = bits[4];
+                    }
+                    
+                //PROGRAM CHANGE
+                } else if (bits[0] == "pc") {
+                    h.msgType_ = PROGRAM_CHANGE;
+                    h.value_   = bits[2].getIntValue(); //For PC types the value is the PROGRAM_CHANGE_NUMBER
+                    h.command_ = bits[3];
+                    
+                //NOTE ON
+                } else if (bits[0] == "non") {
+                    h.msgType_    = NOTE_ON;
+                    h.controller_ = bits[2].getIntValue();
+                    h.value_      = bits[3].getIntValue();
+                    h.command_    = bits[4];
+                    
+                //NOTE OFF
+                } else if (bits[0] == "nof") {
+                    h.msgType_    = NOTE_OFF;
+                    h.controller_ = bits[2].getIntValue();
+                    h.value_      = bits[3].getIntValue();
+                    h.command_    = bits[4];
+                } else {
+                    std::cerr << "NOTE: The type of hook \"" << bits[0] << "\" is not yet supported." << std::endl;
+                    break;
+                }
+                
+                h.channel_    = bits[1].getIntValue();
+                
+                hooks_.add(h);
+                std::cout << "Added a Hook! " << cmd.opts_[0] << std::endl;
                 break;
             }
             case VIRTUAL:
@@ -916,6 +1037,14 @@ private:
             }
         }
         std::cout << line << std::endl << std::endl;
+        std::cout << "Hooks allow the execution of any system command any time a speific message is" << std::endl;
+        std::cout << "received. Currently, only Control Change, Program Change, Note On and Note Off" << std::endl;
+        std::cout << "messages are supported. Usage:" << std::endl;
+        std::cout << "Control Change - \"hook cc [channel] [controller] [controller value] [command]\"" << std::endl;
+        std::cout << "Program Change - \"hook pc [channel] [value] [command]\"" << std::endl;
+        std::cout << "Note On - \"hook non [channel] [note] [value] [command]\"" << std::endl;
+        std::cout << "Note Off - \"hook nof [channel] [note] [value] [command]\"" << std::endl;
+        std::cout << std::endl << std::endl;
         std::cout << "By default, numbers are interpreted in the decimal system, this can be changed" << std::endl
                   << "to hexadecimal by sending the \"hex\" command. Additionally, by suffixing a" << std::endl
                   << "number with \"M\" or \"H\", it will be interpreted as a decimal or hexadecimal" << std::endl
@@ -948,6 +1077,7 @@ private:
     String midiOutName_;
     ScopedPointer<MidiOutput> midiOut_;
     ApplicationCommand currentCommand_;
+    Array<Hook> hooks_;
     JavascriptEngine scriptEngine_;
     String scriptCode_;
     ScriptMidiMessageClass* scriptMidiMessage_;
