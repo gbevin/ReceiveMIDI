@@ -32,6 +32,7 @@ These are all the supported commands:
 ```
   dev   name           Set the name of the MIDI input port
   virt  (name)         Use virtual MIDI port with optional name (Linux/macOS)
+  pass  name           Set name of MIDI output port for MIDI pass-through
   list                 Lists the MIDI input ports
   file  path           Loads commands from the specified program file
   dec                  Interpret the next numbers as decimals by default
@@ -62,6 +63,9 @@ These are all the supported commands:
   spp                  Show Song Position Pointer
   ss                   Show Song Select
   tun                  Show Tune Request
+  q                    Don't show the received messages on standard output
+  js    code           Execute this script for each received MIDI message
+  jsf   path           Execute the script in this file for each message
   -h  or  --help       Print Help (this message) and exit
   --version            Print version information and exit
   --                   Read commands from standard input until it's closed
@@ -69,11 +73,11 @@ These are all the supported commands:
 
 Alternatively, you can use the following long versions of the commands:
 ```
-  device virtual decimal hexadecimal channel timestamp note-numbers
-  octave-middle-c note-on note-off poly-pressure control-change program-change
-  channel-pressure pitch-bend system-realtime continue active-sensing reset
-  system-common system-exclusive time-code song-position song-select
-  tune-request
+  device virtual pass-through decimal hexadecimal channel timestamp
+  note-numbers octave-middle-c note-on note-off poly-pressure control-change
+  program-change channel-pressure pitch-bend system-realtime continue
+  active-sensing reset system-common system-exclusive time-code song-position
+  song-select tune-request quiet javascript javascript-file
 ```
 
 By default, numbers are interpreted in the decimal system, this can be changed to hexadecimal by sending the "hex" command.
@@ -82,7 +86,9 @@ Additionally, by suffixing a number with "M" or "H", it will be interpreted as a
 The MIDI device name doesn't have to be an exact match.
 If ReceiveMIDI can't find the exact name that was specified, it will pick the first MIDI output port that contains the provided text, irrespective of case.
 
-Where notes can be provided as arguments, they can also be written as note names, by default from C-2 to G8 which corresponds to note numbers 0 to 127. By setting the octave for middle C, the note name range can be changed. Sharps can be added by using the '#' symbol after the note letter, and flats by using the letter 'b'.
+Where notes can be provided as arguments, they can also be written as note names, by default from C-2 to G8 which corresponds to note numbers 0 to 127. By setting the octave for middle C, the note name range can be changed. Sharps can be added by using the "#" symbol after the note letter, and flats by using the letter "b".
+
+For details on how to use the "javascript" and "javascript-file" commands, please refer to the JAVASCRIPT.md documentation file.
 
 ## Examples
   
@@ -116,6 +122,22 @@ Receive all messages from LinnStrument and pipe them to the SendMIDI tool in ord
 
 ```
 receivemidi dev linnstrument | sendmidi dev "Bidule  1" --
+```
+
+Receive all messages from LinnStrument.
+Through the JavaScript feature, each note on will execute the `test.sh` command with the note number as argument.
+
+```
+receivemidi dev linnstrument
+  js "if (MIDI.isNoteOn()) Util.command('/path/to/test.sh ' + MIDI.noteNumber());"
+```
+
+Receive all messages from LinnStrument and don't print them out.
+Through the JavaScript feature, each note on message will send an OSC message to 127.0.0.1:12800.
+
+```
+receivemidi dev linnstrument quiet
+  javascript "if (MIDI.isNoteOn()) OSC.connect('127.0.0.1', 12800).send('/note-on', MIDI.noteNumber());"
 ```
 
 ## Text File Format
