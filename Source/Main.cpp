@@ -598,7 +598,7 @@ private:
                     uint8 ch = msg.getChannel() - 1;
                     uint16 v = ((lastCC_[ch][msb_cc] & 0x7f) << 7) | (lastCC_[ch][lsb_cc] & 0x7f);
                     std::cout << "channel "  << outputChannel(msg) << "   " <<
-                                 "cc-14            " << output7Bit(msb_cc).paddedLeft(' ', 3) << " "
+                                 "cc14             " << output7Bit(msb_cc).paddedLeft(' ', 3) << " "
                                                      << output14Bit(v).paddedLeft(' ', 5) << std::endl;
                 }
                 else
