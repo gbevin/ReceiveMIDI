@@ -2,12 +2,14 @@
 
 <JUCERPROJECT id="U5JfXz" name="receivemidi" projectType="consoleapp" version="1.1.0"
               bundleIdentifier="com.uwyn.receivemidi" includeBinaryInAppConfig="1"
-              jucerVersion="5.4.3" companyName="Uwyn" companyWebsite="http://www.uwyn.com"
-              companyEmail="info@uwyn.com" displaySplashScreen="1" reportAppUsage="1"
-              splashScreenColour="Dark">
+              companyName="Uwyn" companyWebsite="http://www.uwyn.com" companyEmail="info@uwyn.com"
+              displaySplashScreen="1" reportAppUsage="1" splashScreenColour="Dark"
+              jucerFormatVersion="1">
   <MAINGROUP id="qBrt8O" name="receivemidi">
     <GROUP id="{77373791-FBB9-12BE-4AF0-C617C2C69BC4}" name="Source">
       <FILE id="hGRRus" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="Yigcjv" name="MidiRPN.cpp" compile="1" resource="0" file="Source/MidiRPN.cpp"/>
+      <FILE id="At2UvF" name="MidiRPN.h" compile="0" resource="0" file="Source/MidiRPN.h"/>
       <FILE id="M3By28" name="ScriptMidiMessageClass.cpp" compile="1" resource="0"
             file="Source/ScriptMidiMessageClass.cpp"/>
       <FILE id="RLieYC" name="ScriptMidiMessageClass.h" compile="0" resource="0"

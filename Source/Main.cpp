@@ -17,6 +17,7 @@
  */
 #include "JuceHeader.h"
 
+#include "MidiRPN.h"
 #include "ScriptMidiMessageClass.h"
 #include "ScriptOscClass.h"
 #include "ScriptUtilClass.h"
@@ -43,6 +44,11 @@ enum CommandIndex
     NOTE_OFF,
     POLY_PRESSURE,
     CONTROL_CHANGE,
+    CONTROL_CHANGE_14BIT,
+    NRPN,
+    NRPN_FULL,
+    RPN,
+    RPN_FULL,
     PROGRAM_CHANGE,
     CHANNEL_PRESSURE,
     PITCH_BEND,
@@ -103,42 +109,47 @@ class receiveMidiApplication  : public JUCEApplicationBase, public MidiInputCall
 public:
     receiveMidiApplication()
     {
-        commands_.add({"dev",   "device",           DEVICE,             1, "name",           "Set the name of the MIDI input port"});
-        commands_.add({"virt",  "virtual",          VIRTUAL,           -1, "(name)",         "Use virtual MIDI port with optional name (Linux/macOS)"});
-        commands_.add({"pass",  "pass-through",     PASSTHROUGH,        1, "name",           "Set name of MIDI output port for MIDI pass-through"});
-        commands_.add({"list",  "",                 LIST,               0, "",               "Lists the MIDI input ports"});
-        commands_.add({"file",  "",                 TXTFILE,            1, "path",           "Loads commands from the specified program file"});
-        commands_.add({"dec",   "decimal",          DECIMAL,            0, "",               "Interpret the next numbers as decimals by default"});
-        commands_.add({"hex",   "hexadecimal",      HEXADECIMAL,        0, "",               "Interpret the next numbers as hexadecimals by default"});
-        commands_.add({"ch",    "channel",          CHANNEL,            1, "number",         "Set MIDI channel for the commands (0-16), defaults to 0"});
-        commands_.add({"ts",    "timestamp",        TIMESTAMP,          0, "",               "Output a timestamp for each received MIDI message"});
-        commands_.add({"nn",    "note-numbers",     NOTE_NUMBERS,       0, "",               "Output notes as numbers instead of names"});
-        commands_.add({"omc",   "octave-middle-c",  OCTAVE_MIDDLE_C,    1, "number",         "Set octave for middle C, defaults to 3"});
-        commands_.add({"voice", "",                 VOICE,              0, "",               "Show all Channel Voice messages"});
-        commands_.add({"note",  "",                 NOTE,               0, "",               "Show all Note messages"});
-        commands_.add({"on",    "note-on",          NOTE_ON,           -1, "(note)",         "Show Note On, optionally for note (0-127)"});
-        commands_.add({"off",   "note-off",         NOTE_OFF,          -1, "(note)",         "Show Note Off, optionally for note (0-127)"});
-        commands_.add({"pp",    "poly-pressure",    POLY_PRESSURE,     -1, "(note)",         "Show Poly Pressure, optionally for note (0-127)"});
-        commands_.add({"cc",    "control-change",   CONTROL_CHANGE,    -1, "(number)",       "Show Control Change, optionally for controller (0-127)"});
-        commands_.add({"pc",    "program-change",   PROGRAM_CHANGE,    -1, "(number)",       "Show Program Change, optionally for program (0-127)"});
-        commands_.add({"cp",    "channel-pressure", CHANNEL_PRESSURE,   0, "",               "Show Channel Pressure"});
-        commands_.add({"pb",    "pitch-bend",       PITCH_BEND,         0, "",               "Show Pitch Bend"});
-        commands_.add({"sr",    "system-realtime",  SYSTEM_REALTIME,    0, "",               "Show all System Real-Time messages"});
-        commands_.add({"clock", "",                 CLOCK,              0, "",               "Show Timing Clock"});
-        commands_.add({"start", "",                 START,              0, "",               "Show Start"});
-        commands_.add({"stop",  "",                 STOP,               0, "",               "Show Stop"});
-        commands_.add({"cont",  "continue",         CONTINUE,           0, "",               "Show Continue"});
-        commands_.add({"as",    "active-sensing",   ACTIVE_SENSING,     0, "",               "Show Active Sensing"});
-        commands_.add({"rst",   "reset",            RESET,              0, "",               "Show Reset"});
-        commands_.add({"sc",    "system-common",    SYSTEM_COMMON,      0, "",               "Show all System Common messages"});
-        commands_.add({"syx",   "system-exclusive", SYSTEM_EXCLUSIVE,   0, "",               "Show System Exclusive"});
-        commands_.add({"tc",    "time-code",        TIME_CODE,          0, "",               "Show MIDI Time Code Quarter Frame"});
-        commands_.add({"spp",   "song-position",    SONG_POSITION,      0, "",               "Show Song Position Pointer"});
-        commands_.add({"ss",    "song-select",      SONG_SELECT,        0, "",               "Show Song Select"});
-        commands_.add({"tun",   "tune-request",     TUNE_REQUEST,       0, "",               "Show Tune Request"});
-        commands_.add({"q",     "quiet",            QUIET,              0, "",               "Don't show the received messages on standard output"});
-        commands_.add({"js",    "javascript",       JAVASCRIPT,         1, "code",           "Execute this script for each received MIDI message"});
-        commands_.add({"jsf",   "javascript-file",  JAVASCRIPT_FILE,    1, "path",           "Execute the script in this file for each message"});
+        commands_.add({"dev",   "device",            DEVICE,                1, "name",           "Set the name of the MIDI input port"});
+        commands_.add({"virt",  "virtual",           VIRTUAL,              -1, "(name)",         "Use virtual MIDI port with optional name (Linux/macOS)"});
+        commands_.add({"pass",  "pass-through",      PASSTHROUGH,           1, "name",           "Set name of MIDI output port for MIDI pass-through"});
+        commands_.add({"list",  "",                  LIST,                  0, "",               "Lists the MIDI input ports"});
+        commands_.add({"file",  "",                  TXTFILE,               1, "path",           "Loads commands from the specified program file"});
+        commands_.add({"dec",   "decimal",           DECIMAL,               0, "",               "Interpret the next numbers as decimals by default"});
+        commands_.add({"hex",   "hexadecimal",       HEXADECIMAL,           0, "",               "Interpret the next numbers as hexadecimals by default"});
+        commands_.add({"ch",    "channel",           CHANNEL,               1, "number",         "Set MIDI channel for the commands (0-16), defaults to 0"});
+        commands_.add({"ts",    "timestamp",         TIMESTAMP,             0, "",               "Output a timestamp for each received MIDI message"});
+        commands_.add({"nn",    "note-numbers",      NOTE_NUMBERS,          0, "",               "Output notes as numbers instead of names"});
+        commands_.add({"omc",   "octave-middle-c",   OCTAVE_MIDDLE_C,       1, "number",         "Set octave for middle C, defaults to 3"});
+        commands_.add({"voice", "",                  VOICE,                 0, "",               "Show all Channel Voice messages"});
+        commands_.add({"note",  "",                  NOTE,                  0, "",               "Show all Note messages"});
+        commands_.add({"on",    "note-on",           NOTE_ON,              -1, "(note)",         "Show Note On, optionally for note (0-127)"});
+        commands_.add({"off",   "note-off",          NOTE_OFF,             -1, "(note)",         "Show Note Off, optionally for note (0-127)"});
+        commands_.add({"pp",    "poly-pressure",     POLY_PRESSURE,        -1, "(note)",         "Show Poly Pressure, optionally for note (0-127)"});
+        commands_.add({"cc",    "control-change",    CONTROL_CHANGE,       -1, "(number)",       "Show Control Change, optionally for controller (0-127)"});
+        commands_.add({"cc14",  "control-change-14", CONTROL_CHANGE_14BIT, -1, "(number)",       "Show 14-bit CC, optionally for controller (0-63)"});
+        commands_.add({"nrpn",  "",                  NRPN,                 -1, "(number)",       "Show NRPN, optionally for parameter (0-16383)"});
+        commands_.add({"nrpnf", "nrpn-full",         NRPN_FULL,            -1, "(number)",       "Show full NRPN (MSB+LSB), optionally for parameter (0-16383)"});
+        commands_.add({"rpn",   "",                  RPN,                  -1, "(number)",       "Show RPN, optionally for parameter (0-16383)"});
+        commands_.add({"rpnf",  "rpn-full",          RPN_FULL,             -1, "(number)",       "Show full RPN (MSB+LSB), optionally for parameter (0-16383)"});
+        commands_.add({"pc",    "program-change",    PROGRAM_CHANGE,       -1, "(number)",       "Show Program Change, optionally for program (0-127)"});
+        commands_.add({"cp",    "channel-pressure",  CHANNEL_PRESSURE,      0, "",               "Show Channel Pressure"});
+        commands_.add({"pb",    "pitch-bend",        PITCH_BEND,            0, "",               "Show Pitch Bend"});
+        commands_.add({"sr",    "system-realtime",   SYSTEM_REALTIME,       0, "",               "Show all System Real-Time messages"});
+        commands_.add({"clock", "",                  CLOCK,                 0, "",               "Show Timing Clock"});
+        commands_.add({"start", "",                  START,                 0, "",               "Show Start"});
+        commands_.add({"stop",  "",                  STOP,                  0, "",               "Show Stop"});
+        commands_.add({"cont",  "continue",          CONTINUE,              0, "",               "Show Continue"});
+        commands_.add({"as",    "active-sensing",    ACTIVE_SENSING,        0, "",               "Show Active Sensing"});
+        commands_.add({"rst",   "reset",             RESET,                 0, "",               "Show Reset"});
+        commands_.add({"sc",    "system-common",     SYSTEM_COMMON,         0, "",               "Show all System Common messages"});
+        commands_.add({"syx",   "system-exclusive",  SYSTEM_EXCLUSIVE,      0, "",               "Show System Exclusive"});
+        commands_.add({"tc",    "time-code",         TIME_CODE,             0, "",               "Show MIDI Time Code Quarter Frame"});
+        commands_.add({"spp",   "song-position",     SONG_POSITION,         0, "",               "Show Song Position Pointer"});
+        commands_.add({"ss",    "song-select",       SONG_SELECT,           0, "",               "Show Song Select"});
+        commands_.add({"tun",   "tune-request",      TUNE_REQUEST,          0, "",               "Show Tune Request"});
+        commands_.add({"q",     "quiet",             QUIET,                 0, "",               "Don't show the received messages on standard output"});
+        commands_.add({"js",    "javascript",        JAVASCRIPT,            1, "code",           "Execute this script for each received MIDI message"});
+        commands_.add({"jsf",   "javascript-file",   JAVASCRIPT_FILE,       1, "path",           "Execute the script in this file for each message"});
 
         timestampOutput_ = false;
         noteNumbersOutput_ = false;
@@ -146,6 +157,14 @@ public:
         useHexadecimalsByDefault_ = false;
         quiet_ = false;
         currentCommand_ = ApplicationCommand::Dummy();
+        // initialize last CC MSB values
+        for (int ch = 0; ch < 16; ++ch)
+        {
+            for (int cc = 0; cc < 128; ++cc)
+            {
+                lastCC_[ch][cc] = -1;
+            }
+        }
     }
     
     const String getApplicationName() override       { return ProjectInfo::projectName; }
@@ -337,10 +356,19 @@ private:
     
     void handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg) override
     {
+        bool display_control_change = true;
+        bool display_control_change_14bit = false;
+        bool display_nrpn = false;
+        bool display_rpn = false;
+
         if (!filterCommands_.isEmpty())
         {
+            // handle individual commands
             bool filtered = false;
             int channel = 0;
+            display_control_change = false;
+            display_control_change_14bit = false;
+            
             for (ApplicationCommand& cmd : filterCommands_)
             {
                 switch (cmd.command_)
@@ -373,9 +401,75 @@ private:
                                     (cmd.opts_.isEmpty() || (msg.getNoteNumber() == asNoteNumber(cmd.opts_[0])));
                         break;
                     case CONTROL_CHANGE:
-                        filtered |= checkChannel(msg, channel) &&
+                        display_control_change = checkChannel(msg, channel) &&
                                     msg.isController() &&
                                     (cmd.opts_.isEmpty() || (msg.getControllerNumber() == asDecOrHex7BitValue(cmd.opts_[0])));
+                        filtered |= display_control_change;
+                        break;
+                    case CONTROL_CHANGE_14BIT:
+                        if (checkChannel(msg, channel) &&
+                            msg.isController() &&
+                            msg.getControllerNumber() < 64 &&
+                            (cmd.opts_.isEmpty() || (msg.getControllerNumber() == asDecOrHex7BitValue(cmd.opts_[0]))))
+                        {
+                            uint8 ch = msg.getChannel() - 1;
+                            uint8 cc = msg.getControllerNumber();
+                            uint8 v = msg.getControllerValue();
+                            uint8 prev_v = lastCC_[ch][cc];
+                            lastCC_[ch][cc] = v;
+
+                            // handle 14-bit MIDI CC values as appropriate
+                            if (cc < 32)
+                            {
+                                // only trigger an MSB-initiated change when its value is different than before
+                                // if it's the same, wait for the LSB to trigger the change
+                                if (v != prev_v)
+                                {
+                                    uint8 lsb_cc = cc + 32;
+                                    lastCC_[ch][lsb_cc] = 0;
+                                    display_control_change_14bit = true;
+                                }
+                            }
+                            // handle 14-bit MIDI CC LSB values
+                            else if (cc >= 32 && cc < 64)
+                            {
+                                uint8 msb_cc = cc - 32;
+                                char msb = lastCC_[ch][msb_cc];
+                                if (msb >= 0)
+                                {
+                                    display_control_change_14bit = true;
+                                }
+                            }
+                        }
+
+                        display_control_change = display_control_change_14bit;
+                        filtered |= display_control_change;
+                        break;
+                    case NRPN:
+                    case NRPN_FULL:
+                        if (checkChannel(msg, channel) && msg.isController())
+                        {
+                            if (rpnDetector_.parseControllerMessage(msg.getChannel(), msg.getControllerNumber(), msg.getControllerValue(), rpnMsg_))
+                            {
+                                display_nrpn = rpnMsg_.isNRPN &&
+                                    (cmd.command_ == NRPN || (cmd.command_ == NRPN_FULL && rpnMsg_.usesBothMSBandLSB)) &&
+                                    (cmd.opts_.isEmpty() || (rpnMsg_.parameterNumber == asDecOrHex14BitValue(cmd.opts_[0])));
+                                filtered |= display_nrpn;
+                            }
+                        }
+                        break;
+                    case RPN:
+                    case RPN_FULL:
+                        if (checkChannel(msg, channel) && msg.isController())
+                        {
+                            if (rpnDetector_.parseControllerMessage(msg.getChannel(), msg.getControllerNumber(), msg.getControllerValue(), rpnMsg_))
+                            {
+                                display_rpn = !rpnMsg_.isNRPN &&
+                                    (cmd.command_ == RPN || (cmd.command_ == RPN_FULL && rpnMsg_.usesBothMSBandLSB)) &&
+                                    (cmd.opts_.isEmpty() || (rpnMsg_.parameterNumber == asDecOrHex14BitValue(cmd.opts_[0])));
+                                filtered |= display_rpn;
+                            }
+                        }
                         break;
                     case PROGRAM_CHANGE:
                         filtered |= checkChannel(msg, channel) &&
@@ -459,11 +553,11 @@ private:
         
         if (!quiet_)
         {
-            outputMessage(msg);
+            outputMessage(msg, display_control_change, display_control_change_14bit, display_nrpn, display_rpn);
         }
     }
     
-    void outputMessage(const MidiMessage& msg)
+    void outputMessage(const MidiMessage& msg, bool displayControlChange, bool displayControlChange14Bit, bool displayNrpn, bool displayRpn)
     {
         if (timestampOutput_)
         {
@@ -491,9 +585,42 @@ private:
         }
         else if (msg.isController())
         {
-            std::cout << "channel "  << outputChannel(msg) << "   " <<
-                         "control-change   " << output7Bit(msg.getControllerNumber()).paddedLeft(' ', 3) << " "
-                                             << output7Bit(msg.getControllerValue()).paddedLeft(' ', 3) << std::endl;
+            if (displayControlChange)
+            {
+                if (displayControlChange14Bit)
+                {
+                    uint8 msb_cc = msg.getControllerNumber();
+                    if (msb_cc >= 32)
+                    {
+                        msb_cc -= 32;
+                    }
+                    uint8 lsb_cc = msb_cc + 32;
+                    uint8 ch = msg.getChannel() - 1;
+                    uint16 v = ((lastCC_[ch][msb_cc] & 0x7f) << 7) | (lastCC_[ch][lsb_cc] & 0x7f);
+                    std::cout << "channel "  << outputChannel(msg) << "   " <<
+                                 "cc-14            " << output7Bit(msb_cc).paddedLeft(' ', 3) << " "
+                                                     << output14Bit(v).paddedLeft(' ', 5) << std::endl;
+                }
+                else
+                {
+                    std::cout << "channel "  << outputChannel(msg) << "   " <<
+                                 "control-change   " << output7Bit(msg.getControllerNumber()).paddedLeft(' ', 3) << "   "
+                                                     << output7Bit(msg.getControllerValue()).paddedLeft(' ', 3) << std::endl;
+                }
+            }
+            
+            if (displayNrpn)
+            {
+                std::cout << "channel "  << outputChannel(msg) << "   " <<
+                             "nrpn           " << output14Bit(rpnMsg_.parameterNumber).paddedLeft(' ', 5) << " "
+                                               << output14Bit(rpnMsg_.value).paddedLeft(' ', 5) << std::endl;
+            }
+            else if (displayRpn)
+            {
+                std::cout << "channel "  << outputChannel(msg) << "   " <<
+                             "rpn            " << output14Bit(rpnMsg_.parameterNumber).paddedLeft(' ', 5) << " "
+                                               << output14Bit(rpnMsg_.value).paddedLeft(' ', 5) << std::endl;
+            }
         }
         else if (msg.isProgramChange())
         {
@@ -627,7 +754,7 @@ private:
     
     bool tryToConnectMidiInput()
     {
-        MidiInput* midi_input = nullptr;
+        std::unique_ptr<MidiInput> midi_input = nullptr;
         String midi_input_name;
         
         int index = MidiInput::getDevices().indexOf(midiInName_);
@@ -653,7 +780,7 @@ private:
         if (midi_input)
         {
             midi_input->start();
-            midiIn_ = midi_input;
+            midiIn_.swap(midi_input);
             fullMidiInName_ = midi_input_name;
             return true;
         }
@@ -888,18 +1015,18 @@ private:
             std::cout << "  " << cmd.param_.paddedRight(' ', 5);
             if (cmd.optionsDescription_.isNotEmpty())
             {
-                std::cout << " " << cmd.optionsDescription_.paddedRight(' ', 13);
+                std::cout << " " << cmd.optionsDescription_.paddedRight(' ', 9);
             }
             else
             {
-                std::cout << "              ";
+                std::cout << "          ";
             }
             std::cout << "  " << cmd.commandDescription_;
             std::cout << std::endl;
         }
-        std::cout << "  -h  or  --help       Print Help (this message) and exit" << std::endl;
-        std::cout << "  --version            Print version information and exit" << std::endl;
-        std::cout << "  --                   Read commands from standard input until it's closed" << std::endl;
+        std::cout << "  -h  or  --help   Print Help (this message) and exit" << std::endl;
+        std::cout << "  --version        Print version information and exit" << std::endl;
+        std::cout << "  --               Read commands from standard input until it's closed" << std::endl;
         std::cout << std::endl;
         std::cout << "Alternatively, you can use the following long versions of the commands:" << std::endl;
         String line = " ";
@@ -943,14 +1070,17 @@ private:
     bool useHexadecimalsByDefault_;
     bool quiet_;
     String midiInName_;
-    ScopedPointer<MidiInput> midiIn_;
+    std::unique_ptr<MidiInput> midiIn_;
     String fullMidiInName_;
     String midiOutName_;
-    ScopedPointer<MidiOutput> midiOut_;
+    std::unique_ptr<MidiOutput> midiOut_;
     ApplicationCommand currentCommand_;
     JavascriptEngine scriptEngine_;
     String scriptCode_;
     ScriptMidiMessageClass* scriptMidiMessage_;
+    RPNDetector rpnDetector_;
+    RPNMessage rpnMsg_;
+    uint8 lastCC_[16][128];
 };
 
 START_JUCE_APPLICATION (receiveMidiApplication)

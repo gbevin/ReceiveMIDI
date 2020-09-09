@@ -41,6 +41,10 @@
 			isa = PBXBuildFile;
 			fileRef = B2451D1DBA700503A8FEDC18;
 		};
+		6EA0E7FEF85943B1DFF916B3 = {
+			isa = PBXBuildFile;
+			fileRef = 533259100534FB3D63540B5C;
+		};
 		733F39336A3BA81575DD317E = {
 			isa = PBXBuildFile;
 			fileRef = 3973848B1FB155637755C9F9;
@@ -126,6 +130,13 @@
 			path = "../../JuceLibraryCode/include_juce_osc.cpp";
 			sourceTree = "SOURCE_ROOT";
 		};
+		533259100534FB3D63540B5C = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = MidiRPN.cpp;
+			path = ../../Source/MidiRPN.cpp;
+			sourceTree = "SOURCE_ROOT";
+		};
 		5D3F4C219DB9D465708B6231 = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
@@ -181,6 +192,13 @@
 			includeInIndex = 0;
 			path = receivemidi;
 			sourceTree = "BUILT_PRODUCTS_DIR";
+		};
+		97C0FA3EF81821C75C9D8CFD = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = MidiRPN.h;
+			path = ../../Source/MidiRPN.h;
+			sourceTree = "SOURCE_ROOT";
 		};
 		9CD2954B59A33B0796DD0778 = {
 			isa = PBXFileReference;
@@ -284,6 +302,8 @@
 			isa = PBXGroup;
 			children = (
 				B2451D1DBA700503A8FEDC18,
+				533259100534FB3D63540B5C,
+				97C0FA3EF81821C75C9D8CFD,
 				3973848B1FB155637755C9F9,
 				C70C6063AC097C5848BB449E,
 				7113DF850C738FF287669BA9,
@@ -378,6 +398,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_LINK_OBJC_RUNTIME = NO;
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build/$(CONFIGURATION)";
 				COPY_PHASE_STRIP = NO;
@@ -405,7 +426,7 @@
 					"$(inherited)",
 				);
 				INSTALL_PATH = "/usr/bin";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.uwyn.receivemidi;
 				PRODUCT_NAME = "receivemidi";
 				USE_HEADERMAP = NO;
@@ -418,6 +439,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_LINK_OBJC_RUNTIME = NO;
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build/$(CONFIGURATION)";
 				DEAD_CODE_STRIPPING = YES;
@@ -438,7 +460,6 @@
 					"JucePlugin_Build_Standalone=0",
 					"JucePlugin_Build_Unity=0",
 				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					"../../JuceLibraryCode",
@@ -447,7 +468,7 @@
 				);
 				INSTALL_PATH = "/usr/bin";
 				LLVM_LTO = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.uwyn.receivemidi;
 				PRODUCT_NAME = "receivemidi";
 				USE_HEADERMAP = NO;
@@ -476,13 +497,15 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
+				ENABLE_TESTABILITY = NO;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
@@ -495,6 +518,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "receivemidi";
+				SDKROOT = macosx;
 				WARNING_CFLAGS = "-Wreorder";
 				ZERO_LINK = NO;
 			};
@@ -522,12 +546,15 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = NO;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
@@ -539,14 +566,11 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PRODUCT_NAME = "receivemidi";
+				SDKROOT = macosx;
 				WARNING_CFLAGS = "-Wreorder";
 				ZERO_LINK = NO;
 			};
 			name = Release;
-		};
-		051CE20F6F4544DC5B59EC97 = {
-			isa = PBXTargetDependency;
-			target = DBA0A682EFBA8D17289648F9;
 		};
 		9B7F79ECBA6BB3FD7D9F4A1B = {
 			isa = XCConfigurationList;
@@ -579,6 +603,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2BA07F2CF2B004870E08CD28,
+				6EA0E7FEF85943B1DFF916B3,
 				733F39336A3BA81575DD317E,
 				39B2279B8530BBC87FA033F9,
 				141F7CB00D1F92A017A030DD,
@@ -622,7 +647,7 @@
 		6323F87A9BE44E1C4257AD90 = {
 			isa = PBXProject;
 			buildConfigurationList = 9B7F79ECBA6BB3FD7D9F4A1B;
-			attributes = { LastUpgradeCheck = 0930; ORGANIZATIONNAME = "Uwyn"; };
+			attributes = { LastUpgradeCheck = 1100; ORGANIZATIONNAME = "Uwyn"; };
 			compatibilityVersion = "Xcode 3.2";
 			hasScannedForEncodings = 0;
 			mainGroup = CA1CE00FEEC53FB42E8CDD06;
