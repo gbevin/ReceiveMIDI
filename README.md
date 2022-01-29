@@ -6,6 +6,10 @@ All the heavy lifting is done by the wonderful JUCE library.
 
 The project website is https://github.com/gbevin/ReceiveMIDI
 
+## Community
+
+Discord: https://discord.gg/sKM6pE575y
+
 ## Purpose
 This tool is mainly intended for quickly monitoring the messages that are sent to your computer from a particular MIDI device. By providing filter commands, it's possible to only focus on particular MIDI messages.
 
