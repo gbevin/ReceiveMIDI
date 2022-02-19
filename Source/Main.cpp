@@ -841,6 +841,7 @@ private:
                 if (midiIn_ == nullptr)
                 {
                     std::cerr << "Couldn't create virtual MIDI input port \"" << name << "\"" << std::endl;
+                    setApplicationReturnValue(EXIT_FAILURE);
                 }
                 else
                 {
@@ -850,6 +851,7 @@ private:
                 }
 #else
                 std::cerr << "Virtual MIDI input ports are not supported on Windows" << std::endl;
+                setApplicationReturnValue(EXIT_FAILURE);
 #endif
                 break;
             }
@@ -883,6 +885,7 @@ private:
                 if (midiOut_ == nullptr)
                 {
                     std::cerr << "Couldn't find MIDI output port \"" << midiOutName_ << "\"" << std::endl;
+                    setApplicationReturnValue(EXIT_FAILURE);
                 }
                 break;
             }
@@ -897,6 +900,7 @@ private:
                 else
                 {
                     std::cerr << "Couldn't find file \"" << path << "\"" << std::endl;
+                    setApplicationReturnValue(EXIT_FAILURE);
                 }
                 break;
             }
@@ -932,6 +936,7 @@ private:
                 else
                 {
                     std::cerr << "Couldn't find file \"" << path << "\"" << std::endl;
+                    setApplicationReturnValue(EXIT_FAILURE);
                 }
                 break;
             }
