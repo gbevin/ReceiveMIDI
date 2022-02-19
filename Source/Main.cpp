@@ -60,6 +60,7 @@ enum CommandIndex
     ACTIVE_SENSING,
     RESET,
     SYSTEM_EXCLUSIVE,
+    SYSTEM_EXCLUSIVE_FILE,
     SYSTEM_COMMON,
     TIME_CODE,
     SONG_POSITION,
@@ -109,47 +110,48 @@ class receiveMidiApplication  : public JUCEApplicationBase, public MidiInputCall
 public:
     receiveMidiApplication()
     {
-        commands_.add({"dev",   "device",            DEVICE,                1, "name",           "Set the name of the MIDI input port"});
-        commands_.add({"virt",  "virtual",           VIRTUAL,              -1, "(name)",         "Use virtual MIDI port with optional name (Linux/macOS)"});
-        commands_.add({"pass",  "pass-through",      PASSTHROUGH,           1, "name",           "Set name of MIDI output port for MIDI pass-through"});
-        commands_.add({"list",  "",                  LIST,                  0, "",               "Lists the MIDI input ports"});
-        commands_.add({"file",  "",                  TXTFILE,               1, "path",           "Loads commands from the specified program file"});
-        commands_.add({"dec",   "decimal",           DECIMAL,               0, "",               "Interpret the next numbers as decimals by default"});
-        commands_.add({"hex",   "hexadecimal",       HEXADECIMAL,           0, "",               "Interpret the next numbers as hexadecimals by default"});
-        commands_.add({"ch",    "channel",           CHANNEL,               1, "number",         "Set MIDI channel for the commands (0-16), defaults to 0"});
-        commands_.add({"ts",    "timestamp",         TIMESTAMP,             0, "",               "Output a timestamp for each received MIDI message"});
-        commands_.add({"nn",    "note-numbers",      NOTE_NUMBERS,          0, "",               "Output notes as numbers instead of names"});
-        commands_.add({"omc",   "octave-middle-c",   OCTAVE_MIDDLE_C,       1, "number",         "Set octave for middle C, defaults to 3"});
-        commands_.add({"voice", "",                  VOICE,                 0, "",               "Show all Channel Voice messages"});
-        commands_.add({"note",  "",                  NOTE,                  0, "",               "Show all Note messages"});
-        commands_.add({"on",    "note-on",           NOTE_ON,              -1, "(note)",         "Show Note On, optionally for note (0-127)"});
-        commands_.add({"off",   "note-off",          NOTE_OFF,             -1, "(note)",         "Show Note Off, optionally for note (0-127)"});
-        commands_.add({"pp",    "poly-pressure",     POLY_PRESSURE,        -1, "(note)",         "Show Poly Pressure, optionally for note (0-127)"});
-        commands_.add({"cc",    "control-change",    CONTROL_CHANGE,       -1, "(number)",       "Show Control Change, optionally for controller (0-127)"});
-        commands_.add({"cc14",  "control-change-14", CONTROL_CHANGE_14BIT, -1, "(number)",       "Show 14-bit CC, optionally for controller (0-63)"});
-        commands_.add({"nrpn",  "",                  NRPN,                 -1, "(number)",       "Show NRPN, optionally for parameter (0-16383)"});
-        commands_.add({"nrpnf", "nrpn-full",         NRPN_FULL,            -1, "(number)",       "Show full NRPN (MSB+LSB), optionally for parameter (0-16383)"});
-        commands_.add({"rpn",   "",                  RPN,                  -1, "(number)",       "Show RPN, optionally for parameter (0-16383)"});
-        commands_.add({"rpnf",  "rpn-full",          RPN_FULL,             -1, "(number)",       "Show full RPN (MSB+LSB), optionally for parameter (0-16383)"});
-        commands_.add({"pc",    "program-change",    PROGRAM_CHANGE,       -1, "(number)",       "Show Program Change, optionally for program (0-127)"});
-        commands_.add({"cp",    "channel-pressure",  CHANNEL_PRESSURE,      0, "",               "Show Channel Pressure"});
-        commands_.add({"pb",    "pitch-bend",        PITCH_BEND,            0, "",               "Show Pitch Bend"});
-        commands_.add({"sr",    "system-realtime",   SYSTEM_REALTIME,       0, "",               "Show all System Real-Time messages"});
-        commands_.add({"clock", "",                  CLOCK,                 0, "",               "Show Timing Clock"});
-        commands_.add({"start", "",                  START,                 0, "",               "Show Start"});
-        commands_.add({"stop",  "",                  STOP,                  0, "",               "Show Stop"});
-        commands_.add({"cont",  "continue",          CONTINUE,              0, "",               "Show Continue"});
-        commands_.add({"as",    "active-sensing",    ACTIVE_SENSING,        0, "",               "Show Active Sensing"});
-        commands_.add({"rst",   "reset",             RESET,                 0, "",               "Show Reset"});
-        commands_.add({"sc",    "system-common",     SYSTEM_COMMON,         0, "",               "Show all System Common messages"});
-        commands_.add({"syx",   "system-exclusive",  SYSTEM_EXCLUSIVE,      0, "",               "Show System Exclusive"});
-        commands_.add({"tc",    "time-code",         TIME_CODE,             0, "",               "Show MIDI Time Code Quarter Frame"});
-        commands_.add({"spp",   "song-position",     SONG_POSITION,         0, "",               "Show Song Position Pointer"});
-        commands_.add({"ss",    "song-select",       SONG_SELECT,           0, "",               "Show Song Select"});
-        commands_.add({"tun",   "tune-request",      TUNE_REQUEST,          0, "",               "Show Tune Request"});
-        commands_.add({"q",     "quiet",             QUIET,                 0, "",               "Don't show the received messages on standard output"});
-        commands_.add({"js",    "javascript",        JAVASCRIPT,            1, "code",           "Execute this script for each received MIDI message"});
-        commands_.add({"jsf",   "javascript-file",   JAVASCRIPT_FILE,       1, "path",           "Execute the script in this file for each message"});
+        commands_.add({"dev",   "device",                   DEVICE,                1, "name",           "Set the name of the MIDI input port"});
+        commands_.add({"virt",  "virtual",                  VIRTUAL,              -1, "(name)",         "Use virtual MIDI port with optional name (Linux/macOS)"});
+        commands_.add({"pass",  "pass-through",             PASSTHROUGH,           1, "name",           "Set name of MIDI output port for MIDI pass-through"});
+        commands_.add({"list",  "",                         LIST,                  0, "",               "Lists the MIDI input ports"});
+        commands_.add({"file",  "",                         TXTFILE,               1, "path",           "Loads commands from the specified program file"});
+        commands_.add({"dec",   "decimal",                  DECIMAL,               0, "",               "Interpret the next numbers as decimals by default"});
+        commands_.add({"hex",   "hexadecimal",              HEXADECIMAL,           0, "",               "Interpret the next numbers as hexadecimals by default"});
+        commands_.add({"ch",    "channel",                  CHANNEL,               1, "number",         "Set MIDI channel for the commands (0-16), defaults to 0"});
+        commands_.add({"ts",    "timestamp",                TIMESTAMP,             0, "",               "Output a timestamp for each received MIDI message"});
+        commands_.add({"nn",    "note-numbers",             NOTE_NUMBERS,          0, "",               "Output notes as numbers instead of names"});
+        commands_.add({"omc",   "octave-middle-c",          OCTAVE_MIDDLE_C,       1, "number",         "Set octave for middle C, defaults to 3"});
+        commands_.add({"voice", "",                         VOICE,                 0, "",               "Show all Channel Voice messages"});
+        commands_.add({"note",  "",                         NOTE,                  0, "",               "Show all Note messages"});
+        commands_.add({"on",    "note-on",                  NOTE_ON,              -1, "(note)",         "Show Note On, optionally for note (0-127)"});
+        commands_.add({"off",   "note-off",                 NOTE_OFF,             -1, "(note)",         "Show Note Off, optionally for note (0-127)"});
+        commands_.add({"pp",    "poly-pressure",            POLY_PRESSURE,        -1, "(note)",         "Show Poly Pressure, optionally for note (0-127)"});
+        commands_.add({"cc",    "control-change",           CONTROL_CHANGE,       -1, "(number)",       "Show Control Change, optionally for controller (0-127)"});
+        commands_.add({"cc14",  "control-change-14",        CONTROL_CHANGE_14BIT, -1, "(number)",       "Show 14-bit CC, optionally for controller (0-63)"});
+        commands_.add({"nrpn",  "",                         NRPN,                 -1, "(number)",       "Show NRPN, optionally for parameter (0-16383)"});
+        commands_.add({"nrpnf", "nrpn-full",                NRPN_FULL,            -1, "(number)",       "Show full NRPN (MSB+LSB), optionally for parameter (0-16383)"});
+        commands_.add({"rpn",   "",                         RPN,                  -1, "(number)",       "Show RPN, optionally for parameter (0-16383)"});
+        commands_.add({"rpnf",  "rpn-full",                 RPN_FULL,             -1, "(number)",       "Show full RPN (MSB+LSB), optionally for parameter (0-16383)"});
+        commands_.add({"pc",    "program-change",           PROGRAM_CHANGE,       -1, "(number)",       "Show Program Change, optionally for program (0-127)"});
+        commands_.add({"cp",    "channel-pressure",         CHANNEL_PRESSURE,      0, "",               "Show Channel Pressure"});
+        commands_.add({"pb",    "pitch-bend",               PITCH_BEND,            0, "",               "Show Pitch Bend"});
+        commands_.add({"sr",    "system-realtime",          SYSTEM_REALTIME,       0, "",               "Show all System Real-Time messages"});
+        commands_.add({"clock", "",                         CLOCK,                 0, "",               "Show Timing Clock"});
+        commands_.add({"start", "",                         START,                 0, "",               "Show Start"});
+        commands_.add({"stop",  "",                         STOP,                  0, "",               "Show Stop"});
+        commands_.add({"cont",  "continue",                 CONTINUE,              0, "",               "Show Continue"});
+        commands_.add({"as",    "active-sensing",           ACTIVE_SENSING,        0, "",               "Show Active Sensing"});
+        commands_.add({"rst",   "reset",                    RESET,                 0, "",               "Show Reset"});
+        commands_.add({"sc",    "system-common",            SYSTEM_COMMON,         0, "",               "Show all System Common messages"});
+        commands_.add({"syx",   "system-exclusive",         SYSTEM_EXCLUSIVE,      0, "",               "Show System Exclusive"});
+        commands_.add({"syf",   "system-exclusive-file",    SYSTEM_EXCLUSIVE_FILE, 1, "path",           "Store SysEx into a .syx file"});
+        commands_.add({"tc",    "time-code",                TIME_CODE,             0, "",               "Show MIDI Time Code Quarter Frame"});
+        commands_.add({"spp",   "song-position",            SONG_POSITION,         0, "",               "Show Song Position Pointer"});
+        commands_.add({"ss",    "song-select",              SONG_SELECT,           0, "",               "Show Song Select"});
+        commands_.add({"tun",   "tune-request",             TUNE_REQUEST,          0, "",               "Show Tune Request"});
+        commands_.add({"q",     "quiet",                    QUIET,                 0, "",               "Don't show the received messages on standard output"});
+        commands_.add({"js",    "javascript",               JAVASCRIPT,            1, "code",           "Execute this script for each received MIDI message"});
+        commands_.add({"jsf",   "javascript-file",          JAVASCRIPT_FILE,       1, "path",           "Execute the script in this file for each message"});
 
         timestampOutput_ = false;
         noteNumbersOutput_ = false;
@@ -249,7 +251,14 @@ public:
         }
     }
     
-    void shutdown() override {}
+    void shutdown() override
+    {
+        if (sysexOutput_)
+        {
+            sysexOutput_->flush();
+            sysexOutput_.reset();
+        }
+    }
     void suspended() override {}
     void resumed() override {}
     void anotherInstanceStarted(const String&) override {}
@@ -527,6 +536,7 @@ private:
                                     (msg.getRawDataSize() == 1 && msg.getRawData()[0] == 0xf6);
                         break;
                     case SYSTEM_EXCLUSIVE:
+                    case SYSTEM_EXCLUSIVE_FILE:
                         filtered |= msg.isSysEx();
                         break;
                     case TIME_CODE:
@@ -676,24 +686,35 @@ private:
         }
         else if (msg.isSysEx())
         {
-            std::cout << "system-exclusive";
-            
-            if (!useHexadecimalsByDefault_)
+            if (sysexOutput_.get() != nullptr)
             {
-                std::cout << " hex";
+                const uint8* data = msg.getRawData();
+                const int size = msg.getRawDataSize();
+                sysexOutput_->write(data, size);
+                sysexOutput_->flush();
+                std::cout << "system-exclusive-file " << size << " bytes" << std::endl;
             }
-            
-            int size = msg.getSysExDataSize();
-            const uint8* data = msg.getSysExData();
-            while (size--)
+            else
             {
-                uint8 b = *data++;
-                std::cout << " " << output7BitAsHex(b);
-            }
-            
-            if (!useHexadecimalsByDefault_)
-            {
-                std::cout << " dec" << std::endl;
+                std::cout << "system-exclusive";
+                
+                if (!useHexadecimalsByDefault_)
+                {
+                    std::cout << " hex";
+                }
+                
+                const uint8* data = msg.getSysExData();
+                int size = msg.getSysExDataSize();
+                while (size--)
+                {
+                    uint8 b = *data++;
+                    std::cout << " " << output7BitAsHex(b);
+                }
+                
+                if (!useHexadecimalsByDefault_)
+                {
+                    std::cout << " dec" << std::endl;
+                }
             }
         }
         else if (msg.isQuarterFrame())
@@ -940,6 +961,23 @@ private:
                 }
                 break;
             }
+            case SYSTEM_EXCLUSIVE_FILE:
+            {
+                String path(cmd.opts_[0]);
+                File file = File::getCurrentWorkingDirectory().getChildFile(path);
+                file.deleteFile();
+                sysexOutput_ = file.createOutputStream();
+                if (sysexOutput_.get() == nullptr)
+                {
+                    std::cerr << "Couldn't create file \"" << path << "\"" << std::endl;
+                    setApplicationReturnValue(EXIT_FAILURE);
+                }
+                else
+                {
+                    filterCommands_.add(cmd);
+                }
+                break;
+            }
             default:
                 filterCommands_.add(cmd);
                 break;
@@ -1108,6 +1146,7 @@ private:
     RPNDetector rpnDetector_;
     RPNMessage rpnMsg_;
     uint8 lastCC_[16][128];
+    std::unique_ptr<FileOutputStream> sysexOutput_;
 };
 
 START_JUCE_APPLICATION (receiveMidiApplication)
