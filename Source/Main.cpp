@@ -218,9 +218,22 @@ public:
         }
     }
     
+    bool isMidiInDeviceAvailable(const String& name)
+    {
+        auto devices = MidiInput::getAvailableDevices();
+        for (int i = 0; i < devices.size(); ++i)
+        {
+            if (devices[i].name == name)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     void timerCallback() override
     {
-        if (fullMidiInName_.isNotEmpty() && !MidiInput::getDevices().contains(fullMidiInName_))
+        if (fullMidiInName_.isNotEmpty() && !isMidiInDeviceAvailable(fullMidiInName_))
         {
             std::cerr << "MIDI input port \"" << fullMidiInName_ << "\" got disconnected, waiting." << std::endl;
             
@@ -757,21 +770,25 @@ private:
         std::unique_ptr<MidiInput> midi_input = nullptr;
         String midi_input_name;
         
-        int index = MidiInput::getDevices().indexOf(midiInName_);
-        if (index >= 0)
+        auto devices = MidiInput::getAvailableDevices();
+        for (int i = 0; i < devices.size(); ++i)
         {
-            midi_input = MidiInput::openDevice(index, this);
-            midi_input_name = midiInName_;
+            if (devices[i].name == midiInName_)
+            {
+                midi_input = MidiInput::openDevice(devices[i].identifier, this);
+                midi_input_name = devices[i].name;
+                break;
+            }
         }
-        else
+        
+        if (midi_input == nullptr)
         {
-            StringArray devices = MidiInput::getDevices();
             for (int i = 0; i < devices.size(); ++i)
             {
-                if (devices[i].containsIgnoreCase(midiInName_))
+                if (devices[i].name.containsIgnoreCase(midiInName_))
                 {
-                    midi_input = MidiInput::openDevice(i, this);
-                    midi_input_name = devices[i];
+                    midi_input = MidiInput::openDevice(devices[i].identifier, this);
+                    midi_input_name = devices[i].name;
                     break;
                 }
             }
@@ -795,9 +812,9 @@ private:
             case NONE:
                 break;
             case LIST:
-                for (auto&& device : MidiInput::getDevices())
+                for (auto&& device : MidiOutput::getAvailableDevices())
                 {
-                    std::cout << device << std::endl;
+                    std::cout << device.name << std::endl;
                 }
                 systemRequestedQuit();
                 break;
@@ -840,20 +857,25 @@ private:
             {
                 midiOut_ = nullptr;
                 midiOutName_ = cmd.opts_[0];
-                int index = MidiOutput::getDevices().indexOf(midiOutName_);
-                if (index >= 0)
+                auto devices = MidiOutput::getAvailableDevices();
+                for (int i = 0; i < devices.size(); ++i)
                 {
-                    midiOut_ = MidiOutput::openDevice(index);
+                    if (devices[i].name == midiOutName_)
+                    {
+                        midiOut_ = MidiOutput::openDevice(devices[i].identifier);
+                        midiOutName_ = devices[i].name;
+                        break;
+                    }
                 }
-                else
+                
+                if (midiOut_ == nullptr)
                 {
-                    StringArray devices = MidiOutput::getDevices();
                     for (int i = 0; i < devices.size(); ++i)
                     {
-                        if (devices[i].containsIgnoreCase(midiOutName_))
+                        if (devices[i].name.containsIgnoreCase(midiOutName_))
                         {
-                            midiOut_ = MidiOutput::openDevice(i);
-                            midiOutName_ = devices[i];
+                            midiOut_ = MidiOutput::openDevice(devices[i].identifier);
+                            midiOutName_ = devices[i].name;
                             break;
                         }
                     }
