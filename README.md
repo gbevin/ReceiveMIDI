@@ -68,6 +68,7 @@ These are all the supported commands:
   rst              Show Reset
   sc               Show all System Common messages
   syx              Show System Exclusive
+  syf   path       Store SysEx into a .syx file
   tc               Show MIDI Time Code Quarter Frame
   spp              Show Song Position Pointer
   ss               Show Song Select
@@ -86,8 +87,8 @@ Alternatively, you can use the following long versions of the commands:
   note-numbers octave-middle-c note-on note-off poly-pressure control-change
   control-change-14 nrpn-full rpn-full program-change channel-pressure
   pitch-bend system-realtime continue active-sensing reset system-common
-  system-exclusive time-code song-position song-select tune-request quiet
-  javascript javascript-file
+  system-exclusive system-exclusive-file time-code song-position song-select
+  tune-request quiet javascript javascript-file
 ```
 
 By default, numbers are interpreted in the decimal system, this can be changed to hexadecimal by sending the "hex" command.
