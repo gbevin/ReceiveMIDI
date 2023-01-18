@@ -833,7 +833,7 @@ private:
             case NONE:
                 break;
             case LIST:
-                for (auto&& device : MidiOutput::getAvailableDevices())
+                for (auto&& device : MidiInput::getAvailableDevices())
                 {
                     std::cout << device.name << std::endl;
                 }
