@@ -168,6 +168,32 @@ voice
 start stop
 ```
 
+## Building on Linux
+
+To build ReceiveMIDI on Linux you need a minimal set of packages installed beforehand, on Ubuntu this can be done with:
+
+```
+sudo apt install build-essential pkg-config libasound2-dev
+```
+
+After that, go to the `LinuxMakeFile` directory
+
+```
+cd Builds/LinuxMakeFile
+```
+
+and build the binary by typing `make`
+
+```
+make
+```
+
+The resulting binary will be in the `Build/LinuxMakeFile/build` directory and can be moved anywhere appropriate on your system, for instance into `/usr/local/bin`:
+
+```
+sudo mv build/receivemidi /usr/local/bin
+```
+
 ## SendMIDI compatibility
 
 The output of the ReceiveMIDI tool is compatible with the SendMIDI tool, allowing you to store MIDI message sequences and play them back later. By using Unix-style pipes on the command-line, it's even possible to chain the receivemidi and sendmidi commands in order to forward MIDI messages.
