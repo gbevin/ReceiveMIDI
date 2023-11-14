@@ -19,9 +19,16 @@ Here's a tutorial video about both SendMIDI and ReceiveMIDI, including some tips
 
 <a href="https://www.youtube.com/watch?v=_o1kg0IbetY" target="_blank"><img src="https://i.ytimg.com/vi/_o1kg0IbetY/maxresdefault.jpg" alt="Tutorial Video" width="640" border="2" /></a>
 
+## ShowMIDI
+
+If you're looking for a beautiful GUI to effortlessly visualize MIDI activity without having to wade through log files, please take a look at my other tool ShowMIDI:
+https://github.com/gbevin/ShowMIDI
+
+<p><a href="https://github.com/gbevin/ShowMIDI"><img src="https://raw.githubusercontent.com/gbevin/ShowMIDI/main/Design/showmidi-0.5.0.png" width="480" border="0"/></a></p>
+
 ## Download
 
-You can download pre-built binaries from the release section:
+You can download pre-built ReceiveMIDI binaries from the release section:
 https://github.com/gbevin/ReceiveMIDI/releases
 
 Since ReceiveMIDI is free and open-source, you can also easily build it yourself. Just take a look into the Builds directory when you download the sources.
