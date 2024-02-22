@@ -67,6 +67,7 @@ enum CommandIndex
     SONG_SELECT,
     TUNE_REQUEST,
     QUIET,
+    RAWDUMP,
     JAVASCRIPT,
     JAVASCRIPT_FILE
 };
@@ -150,6 +151,7 @@ public:
         commands_.add({"ss",    "song-select",              SONG_SELECT,           0, "",               "Show Song Select"});
         commands_.add({"tun",   "tune-request",             TUNE_REQUEST,          0, "",               "Show Tune Request"});
         commands_.add({"q",     "quiet",                    QUIET,                 0, "",               "Don't show the received messages on standard output"});
+        commands_.add({"dump",  "",                         RAWDUMP,               0, "",               "Dump the received messages 1:1 on standard output"});
         commands_.add({"js",    "javascript",               JAVASCRIPT,            1, "code",           "Execute this script for each received MIDI message"});
         commands_.add({"jsf",   "javascript-file",          JAVASCRIPT_FILE,       1, "path",           "Execute the script in this file for each message"});
 
@@ -158,6 +160,7 @@ public:
         octaveMiddleC_ = DEFAULT_OCTAVE_MIDDLE_C;
         useHexadecimalsByDefault_ = false;
         quiet_ = false;
+        rawdump_ = false;
         currentCommand_ = ApplicationCommand::Dummy();
         // initialize last CC MSB values
         for (int ch = 0; ch < 16; ++ch)
@@ -576,10 +579,23 @@ private:
         
         if (!quiet_)
         {
-            outputMessage(msg, display_control_change, display_control_change_14bit, display_nrpn, display_rpn);
+            if (rawdump_) {
+                dumpMessage(msg);
+            }
+            else {
+                outputMessage(msg, display_control_change, display_control_change_14bit, display_nrpn, display_rpn);
+            }
         }
     }
     
+
+    void dumpMessage(const MidiMessage& msg)
+    {
+        std::cout.write((char *)msg.getRawData(), msg.getRawDataSize());
+        std::cout.flush();
+    }
+
+
     void outputMessage(const MidiMessage& msg, bool displayControlChange, bool displayControlChange14Bit, bool displayNrpn, bool displayRpn)
     {
         if (timestampOutput_)
@@ -943,6 +959,9 @@ private:
             case QUIET:
                 quiet_ = true;
                 break;
+            case RAWDUMP:
+                rawdump_ = true;
+                break;
             case JAVASCRIPT:
                 scriptCode_ = cmd.opts_[0];
                 break;
@@ -1134,6 +1153,7 @@ private:
     int octaveMiddleC_;
     bool useHexadecimalsByDefault_;
     bool quiet_;
+    bool rawdump_;
     String midiInName_;
     std::unique_ptr<MidiInput> midiIn_;
     String fullMidiInName_;
