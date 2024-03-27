@@ -214,6 +214,9 @@
     <ClCompile Include="..\..\Source\Main.cpp">
       <Filter>receivemidi\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\MpeProfileNegotation.cpp">
+      <Filter>receivemidi\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\ScriptMidiMessageClass.cpp">
       <Filter>receivemidi\Source</Filter>
     </ClCompile>
@@ -1189,6 +1192,9 @@
       <Filter>receivemidi\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\ApplicationState.h">
+      <Filter>receivemidi\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\MpeProfileNegotiation.h">
       <Filter>receivemidi\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\ScriptMidiMessageClass.h">

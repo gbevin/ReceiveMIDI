@@ -18,6 +18,7 @@
 		2BA07F2CF2B004870E08CD28 /* Main.cpp */ = {isa = PBXBuildFile; fileRef = B2451D1DBA700503A8FEDC18; };
 		39B2279B8530BBC87FA033F9 /* ScriptOscClass.cpp */ = {isa = PBXBuildFile; fileRef = 7113DF850C738FF287669BA9; };
 		5DC8BD2E0E589697B3A66001 /* CoreAudio.framework */ = {isa = PBXBuildFile; fileRef = 39BBB61E6B2796DB8C72B46D; };
+		65C195657857F267C7A346F5 /* MpeProfileNegotation.cpp */ = {isa = PBXBuildFile; fileRef = 72686C5762C0131F6547BE59; };
 		676C45DAB727EB1C22FF8A69 /* include_juce_data_structures.mm */ = {isa = PBXBuildFile; fileRef = 08ACADE6BD3415FD33BA447B; };
 		6880B81F73F0FA7247CF39DD /* ApplicationState.cpp */ = {isa = PBXBuildFile; fileRef = 28F1F23438CA15D2AF8C89C3; };
 		6902382771EAA2D95B1FC548 /* Security.framework */ = {isa = PBXBuildFile; fileRef = C9F8D0428E730A57BD28709B; };
@@ -45,6 +46,7 @@
 		52AE88A364FFF2111D8EF313 /* include_juce_osc.cpp */ /* include_juce_osc.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_osc.cpp; path = ../../JuceLibraryCode/include_juce_osc.cpp; sourceTree = SOURCE_ROOT; };
 		5D3F4C219DB9D465708B6231 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		7113DF850C738FF287669BA9 /* ScriptOscClass.cpp */ /* ScriptOscClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ScriptOscClass.cpp; path = ../../Source/ScriptOscClass.cpp; sourceTree = SOURCE_ROOT; };
+		72686C5762C0131F6547BE59 /* MpeProfileNegotation.cpp */ /* MpeProfileNegotation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MpeProfileNegotation.cpp; path = ../../Source/MpeProfileNegotation.cpp; sourceTree = SOURCE_ROOT; };
 		73AD3DE63A37B270FBD38565 /* juce_data_structures */ /* juce_data_structures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_data_structures; path = ../../JuceLibraryCode/modules/juce_data_structures; sourceTree = SOURCE_ROOT; };
 		75277E44FA5367906BAE62CF /* juce_audio_devices */ /* juce_audio_devices */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_devices; path = ../../JuceLibraryCode/modules/juce_audio_devices; sourceTree = SOURCE_ROOT; };
 		7DD493C8E6F3B7C63C78F6DE /* include_juce_core.mm */ /* include_juce_core.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_core.mm; path = ../../JuceLibraryCode/include_juce_core.mm; sourceTree = SOURCE_ROOT; };
@@ -71,6 +73,7 @@
 		E36ADE62396919C537A4D356 /* include_juce_audio_devices.mm */ /* include_juce_audio_devices.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_devices.mm; path = ../../JuceLibraryCode/include_juce_audio_devices.mm; sourceTree = SOURCE_ROOT; };
 		E4C8EEEE325689D7C180CC52 /* juce_audio_basics */ /* juce_audio_basics */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_basics; path = ../../JuceLibraryCode/modules/juce_audio_basics; sourceTree = SOURCE_ROOT; };
 		F0AC19E3023CA8E85D590A1B /* include_juce_events.mm */ /* include_juce_events.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_events.mm; path = ../../JuceLibraryCode/include_juce_events.mm; sourceTree = SOURCE_ROOT; };
+		F49CC32851912CFDB16D532C /* MpeProfileNegotiation.h */ /* MpeProfileNegotiation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MpeProfileNegotiation.h; path = ../../Source/MpeProfileNegotiation.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +156,8 @@
 				28F1F23438CA15D2AF8C89C3,
 				B3F525C4B60601DCE10BD37C,
 				B2451D1DBA700503A8FEDC18,
+				72686C5762C0131F6547BE59,
+				F49CC32851912CFDB16D532C,
 				3973848B1FB155637755C9F9,
 				C70C6063AC097C5848BB449E,
 				7113DF850C738FF287669BA9,
@@ -257,6 +262,7 @@
 				07D003296AAD48C717CA6983,
 				6880B81F73F0FA7247CF39DD,
 				2BA07F2CF2B004870E08CD28,
+				65C195657857F267C7A346F5,
 				733F39336A3BA81575DD317E,
 				39B2279B8530BBC87FA033F9,
 				141F7CB00D1F92A017A030DD,

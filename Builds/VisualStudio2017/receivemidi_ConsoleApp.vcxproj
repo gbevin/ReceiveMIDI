@@ -144,6 +144,7 @@
     <ClCompile Include="..\..\Source\ApplicationCommand.cpp"/>
     <ClCompile Include="..\..\Source\ApplicationState.cpp"/>
     <ClCompile Include="..\..\Source\Main.cpp"/>
+    <ClCompile Include="..\..\Source\MpeProfileNegotation.cpp"/>
     <ClCompile Include="..\..\Source\ScriptMidiMessageClass.cpp"/>
     <ClCompile Include="..\..\Source\ScriptOscClass.cpp"/>
     <ClCompile Include="..\..\Source\ScriptUtilClass.cpp"/>
@@ -1054,6 +1055,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source\ApplicationCommand.h"/>
     <ClInclude Include="..\..\Source\ApplicationState.h"/>
+    <ClInclude Include="..\..\Source\MpeProfileNegotiation.h"/>
     <ClInclude Include="..\..\Source\ScriptMidiMessageClass.h"/>
     <ClInclude Include="..\..\Source\ScriptOscClass.h"/>
     <ClInclude Include="..\..\Source\ScriptUtilClass.h"/>

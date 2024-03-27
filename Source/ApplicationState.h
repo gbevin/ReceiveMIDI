@@ -21,6 +21,7 @@
 #include "JuceHeader.h"
 
 #include "ApplicationCommand.h"
+#include "MpeProfileNegotiation.h"
 #include "ScriptMidiMessageClass.h"
 
 class ApplicationState : public MidiInputCallback, public Timer
@@ -29,6 +30,8 @@ public:
     ApplicationState();
     void initialise(JUCEApplicationBase& app);
     void shutdown();
+    
+    static std::unique_ptr<MidiOutput> openOutputDevice(const String& name);
 
     uint8 asNoteNumber(String value);
     uint8 asDecOrHex7BitValue(String value);
@@ -47,6 +50,7 @@ private:
     StringArray parseLineAsParameters(const String& line);
     void executeCurrentCommand();
     void handleVarArgCommand();
+    void openInputDevice(const String& name);
     void parseParameters(StringArray& parameters);
     void parseFile(File file);
     void handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg) override;
@@ -85,8 +89,9 @@ private:
     std::unique_ptr<MidiInput> midiIn_;
     String fullMidiInName_;
     
-    String midiOutName_;
-    std::unique_ptr<MidiOutput> midiOut_;
+    std::unique_ptr<MidiOutput> midiPass_;
     
+    std::unique_ptr<MpeProfileNegotiation> mpeProfile_;
+
     std::unique_ptr<FileOutputStream> sysexOutput_;
 };

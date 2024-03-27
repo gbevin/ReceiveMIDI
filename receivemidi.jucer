@@ -16,6 +16,10 @@
       <FILE id="GBoGkP" name="ApplicationState.h" compile="0" resource="0"
             file="Source/ApplicationState.h"/>
       <FILE id="hGRRus" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="dcYqFP" name="MpeProfileNegotation.cpp" compile="1" resource="0"
+            file="Source/MpeProfileNegotation.cpp"/>
+      <FILE id="lNEBkp" name="MpeProfileNegotiation.h" compile="0" resource="0"
+            file="Source/MpeProfileNegotiation.h"/>
       <FILE id="M3By28" name="ScriptMidiMessageClass.cpp" compile="1" resource="0"
             file="Source/ScriptMidiMessageClass.cpp"/>
       <FILE id="RLieYC" name="ScriptMidiMessageClass.h" compile="0" resource="0"
