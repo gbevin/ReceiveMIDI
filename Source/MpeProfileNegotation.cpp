@@ -23,6 +23,9 @@
 // MPE Profile ID
 ci::Profile MpeProfileNegotiation::MPE_PROFILE = { std::byte(0x7E), std::byte(0x31), std::byte(0x00), std::byte(0x01), std::byte(0x01) };
     
+// Profile Detail Inquiry Target
+std::byte MpeProfileNegotiation::TARGET_FEATURES_SUPPORTED = std::byte(0x01);
+
 MpeProfileNegotiation::MpeProfileNegotiation(ApplicationState* state)
 {
     ci_ = std::make_unique<ci::Device>(ci::DeviceOptions()
@@ -41,6 +44,8 @@ MpeProfileNegotiation::MpeProfileNegotiation(ApplicationState* state)
                                            { std::byte(0x01), std::byte(0x00), std::byte(0x00), std::byte(0x00) }} )
                                        .withOutputs({ this })
                                        .withProfileDelegate(this));
+    ci_->addListener(*this);
+
     // support the MPE profile on any channel as the manager channel, except on channel 16
     // we support all the possible channels upwards from the manager channel
     for (int ch = 0x0; ch <= 0xE; ++ch)
@@ -145,3 +150,19 @@ void MpeProfileNegotiation::disableProfile(ci::MUID muid, ci::ProfileAtAddress p
     enabledProfile_ = false;
     enabledProfileAddress_ = ci::ProfileAtAddress();
 }
+
+std::vector<std::byte> MpeProfileNegotiation::profileDetailsInquired(ci::MUID muid, ci::ProfileAtAddress profileAtAddress, std::byte target)
+{
+    std::cout << muidToString(muid) << " : MPE profile details inquired for optional features" << std::endl;
+    if (target == std::byte(TARGET_FEATURES_SUPPORTED))
+    {
+        auto supportsChannelResponse = std::byte(0x0);
+        auto supportsPitchBend = std::byte(0x1);
+        auto supportsChannelPressure = std::byte(0x1);
+        auto supportsThirdDimension = std::byte(0x1);
+        
+        return std::vector<std::byte> { supportsChannelResponse, supportsPitchBend, supportsChannelPressure, supportsThirdDimension };
+    }
+    
+    return std::vector<std::byte>();
+};

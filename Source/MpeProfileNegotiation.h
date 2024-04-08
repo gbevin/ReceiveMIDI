@@ -22,11 +22,11 @@
 
 class ApplicationState;
 
-class MpeProfileNegotiation : ci::ProfileDelegate, ci::DeviceMessageHandler, MidiInputCallback
+class MpeProfileNegotiation : ci::DeviceListener, ci::ProfileDelegate, ci::DeviceMessageHandler, MidiInputCallback
 {
 public:
     MpeProfileNegotiation(ApplicationState* state);
-    void processMessage(ump::BytesOnGroup);
+    void processMessage(ump::BytesOnGroup) override;
     
     void setProfileMidiName(const String& name);
     void setManager(int manager);
@@ -36,17 +36,22 @@ private:
     static std::string muidToString(ci::MUID muid);
 
     virtual void handleIncomingMidiMessage(MidiInput* source,
-                                           const MidiMessage& message);
+                                           const MidiMessage& message) override;
 
     virtual void profileEnablementRequested(ci::MUID muid,
                                             ci::ProfileAtAddress profileAtAddress,
                                             int numChannels,
-                                            bool enabled);
+                                            bool enabled) override;
 
     void disableProfile(ci::MUID muid, ci::ProfileAtAddress profileAtAddress);
 
+    virtual std::vector<std::byte> profileDetailsInquired(ci::MUID muid,
+                                                          ci::ProfileAtAddress profileAtAddress,
+                                                          std::byte target) override;
+
     static ci::Profile MPE_PROFILE;
-    
+    static std::byte TARGET_FEATURES_SUPPORTED;
+
     String midiName_  {   };
     int manager_      { 0 };
     int members_      { 0 };
