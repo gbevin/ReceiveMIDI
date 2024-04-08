@@ -43,6 +43,8 @@ private:
                                             int numChannels,
                                             bool enabled);
 
+    void disableProfile(ci::MUID muid, ci::ProfileAtAddress profileAtAddress);
+
     static ci::Profile MPE_PROFILE;
     
     String midiName_  {   };
@@ -52,4 +54,7 @@ private:
     std::unique_ptr<ci::Device> ci_;
     std::unique_ptr<MidiInput> profileMidiIn_;
     std::unique_ptr<MidiOutput> profileMidiOut_;
+    
+    bool enabledProfile_    { false };
+    ci::ProfileAtAddress enabledProfileAddress_;
 };
