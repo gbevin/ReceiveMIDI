@@ -31,7 +31,11 @@ public:
     void setProfileMidiName(const String& name);
     void setManager(int manager);
     void setMembers(int members);
-    
+    void setSupportsChannelResponse(int flag);
+    void setSupportsPitchBend(int flag);
+    void setSupportsChannelPressure(int flag);
+    void setSupportsThirdDimension(int flag);
+
 private:
     static std::string muidToString(ci::MUID muid);
 
@@ -56,6 +60,11 @@ private:
     int manager_      { 0 };
     int members_      { 0 };
     
+    std::byte supportsChannelResponse_  { 0x0 };
+    std::byte supportsPitchBend_        { 0x1 };
+    std::byte supportsChannelPressure_  { 0x1 };
+    std::byte supportsThirdDimension_   { 0x1 };
+
     std::unique_ptr<ci::Device> ci_;
     std::unique_ptr<MidiInput> profileMidiIn_;
     std::unique_ptr<MidiOutput> profileMidiOut_;

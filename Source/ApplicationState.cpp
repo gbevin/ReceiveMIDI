@@ -75,10 +75,14 @@ ApplicationState::ApplicationState()
     commands_.add({"js",    "javascript",               JAVASCRIPT,            1, {"code"},             {"Execute this script for each received MIDI message"}});
     commands_.add({"jsf",   "javascript-file",          JAVASCRIPT_FILE,       1, {"path"},             {"Execute the script in this file for each message"}});
     commands_.add({"mpp",   "mpe-profile",              MPE_PROFILE,           3, {"name", "manager", "members"},
-                                                                                  {"Configure a responder MPE Profile creating virtual MIDI input",
+                                                                                  {"Configure responder MPE Profile creating virtual MIDI input",
                                                                                    "and output ports with the provided name, available manager",
                                                                                    "channel (1-15 or 0 for any) and desired member channel",
                                                                                    "count (1-15, or 0 for any) (Linux/macOS)"}});
+    commands_.add({"mcr",   "mpe-channel-reponse",      MPE_CHANNEL_RESPONSE,  1, {"flag"},             {"Sets MPE Profile channel response feature (0-1)"}});
+    commands_.add({"mpb",   "mpe-pitch-bend",           MPE_PITCH_BEND,        1, {"flag"},             {"Sets MPE Profile pitch bend feature (0-1)"}});
+    commands_.add({"mcp",   "mpe-channel-pressure",     MPE_CHANNEL_PRESSURE,  1, {"flag"},             {"Sets MPE Profile channel pressure feature (0-2)"}});
+    commands_.add({"m3d",   "mpe-3rd-dimension",        MPE_3RD_DIMENSION,     1, {"flag"},             {"Sets MPE Profile 3rd dimension feature (0-2)"}});
 
     timestampOutput_ = false;
     noteNumbersOutput_ = false;
@@ -769,6 +773,18 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
 #endif
             break;
         }
+        case MPE_CHANNEL_RESPONSE:
+            mpeProfile_->setSupportsChannelResponse(jlimit(0, 1, asDecOrHexIntValue(cmd.opts_[0])));
+            break;
+        case MPE_PITCH_BEND:
+            mpeProfile_->setSupportsPitchBend(jlimit(0, 1, asDecOrHexIntValue(cmd.opts_[0])));
+            break;
+        case MPE_CHANNEL_PRESSURE:
+            mpeProfile_->setSupportsChannelPressure(jlimit(0, 2, asDecOrHexIntValue(cmd.opts_[0])));
+            break;
+        case MPE_3RD_DIMENSION:
+            mpeProfile_->setSupportsThirdDimension(jlimit(0, 2, asDecOrHexIntValue(cmd.opts_[0])));
+            break;
         default:
             filterCommands_.add(cmd);
             break;

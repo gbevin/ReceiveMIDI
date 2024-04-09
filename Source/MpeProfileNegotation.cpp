@@ -83,6 +83,26 @@ void MpeProfileNegotiation::setMembers(int members)
     members_ = members;
 }
 
+void MpeProfileNegotiation::setSupportsChannelResponse(int flag)
+{
+    supportsChannelResponse_ = std::byte(flag);
+}
+
+void MpeProfileNegotiation::setSupportsPitchBend(int flag)
+{
+    supportsPitchBend_ = std::byte(flag);
+}
+
+void MpeProfileNegotiation::setSupportsChannelPressure(int flag)
+{
+    supportsChannelPressure_ = std::byte(flag);
+}
+
+void MpeProfileNegotiation::setSupportsThirdDimension(int flag)
+{
+    supportsThirdDimension_ = std::byte(flag);
+}
+
 void MpeProfileNegotiation::processMessage(ump::BytesOnGroup umsg)
 {
     if (midiName_.isEmpty())
@@ -156,12 +176,7 @@ std::vector<std::byte> MpeProfileNegotiation::profileDetailsInquired(ci::MUID mu
     std::cout << muidToString(muid) << " : MPE profile details inquired for optional features" << std::endl;
     if (target == std::byte(TARGET_FEATURES_SUPPORTED))
     {
-        auto supportsChannelResponse = std::byte(0x0);
-        auto supportsPitchBend = std::byte(0x1);
-        auto supportsChannelPressure = std::byte(0x1);
-        auto supportsThirdDimension = std::byte(0x1);
-        
-        return std::vector<std::byte> { supportsChannelResponse, supportsPitchBend, supportsChannelPressure, supportsThirdDimension };
+        return std::vector<std::byte> { supportsChannelResponse_, supportsPitchBend_, supportsChannelPressure_, supportsThirdDimension_ };
     }
     
     return std::vector<std::byte>();

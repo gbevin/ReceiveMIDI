@@ -66,7 +66,11 @@ enum CommandIndex
     RAWDUMP,
     JAVASCRIPT,
     JAVASCRIPT_FILE,
-    MPE_PROFILE
+    MPE_PROFILE,
+    MPE_CHANNEL_RESPONSE,
+    MPE_PITCH_BEND,
+    MPE_CHANNEL_PRESSURE,
+    MPE_3RD_DIMENSION
 };
 
 class ApplicationState;
