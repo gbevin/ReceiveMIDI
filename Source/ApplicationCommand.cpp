@@ -78,10 +78,10 @@ void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg,
                 msg.getControllerNumber() < 64 &&
                 (opts_.isEmpty() || (msg.getControllerNumber() == state.asDecOrHex7BitValue(opts_[0]))))
             {
-                uint8 ch = msg.getChannel() - 1;
-                uint8 cc = msg.getControllerNumber();
-                uint8 v = msg.getControllerValue();
-                uint8 prev_v = state.lastCC_[ch][cc];
+                uint8 ch = (uint8)msg.getChannel() - 1;
+                uint8 cc = (uint8)msg.getControllerNumber();
+                uint8 v = (uint8)msg.getControllerValue();
+                uint8 prev_v = (uint8)state.lastCC_[ch][cc];
                 state.lastCC_[ch][cc] = v;
                 
                 // handle 14-bit MIDI CC values as appropriate
@@ -100,7 +100,7 @@ void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg,
                 else if (cc >= 32 && cc < 64)
                 {
                     uint8 msb_cc = cc - 32;
-                    char msb = state.lastCC_[ch][msb_cc];
+                    int msb = state.lastCC_[ch][msb_cc];
                     if (msb >= 0)
                     {
                         display.displayControlChange14bit = true;

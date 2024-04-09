@@ -25,7 +25,7 @@ class ApplicationState;
 class MpeProfileNegotiation : ci::DeviceListener, ci::ProfileDelegate, ci::DeviceMessageHandler, MidiInputCallback
 {
 public:
-    MpeProfileNegotiation(ApplicationState* state);
+    MpeProfileNegotiation();
     void processMessage(ump::BytesOnGroup) override;
     
     void setProfileMidiName(const String& name);
@@ -47,7 +47,7 @@ private:
                                             int numChannels,
                                             bool enabled) override;
 
-    void disableProfile(ci::MUID muid, ci::ProfileAtAddress profileAtAddress);
+    void disableProfile(ci::MUID muid);
 
     virtual std::vector<std::byte> profileDetailsInquired(ci::MUID muid,
                                                           ci::ProfileAtAddress profileAtAddress,

@@ -40,7 +40,7 @@ public:
     MidiRPNDetector rpnDetector_;
     MidiRPNMessage rpnMsg_;
     
-    uint8 lastCC_[16][128];
+    int lastCC_[16][128];
 
 private:
     bool isMidiInDeviceAvailable(const String& name);

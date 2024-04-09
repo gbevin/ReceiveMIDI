@@ -26,7 +26,7 @@ ci::Profile MpeProfileNegotiation::MPE_PROFILE = { std::byte(0x7E), std::byte(0x
 // Profile Detail Inquiry Target
 std::byte MpeProfileNegotiation::TARGET_FEATURES_SUPPORTED = std::byte(0x01);
 
-MpeProfileNegotiation::MpeProfileNegotiation(ApplicationState* state)
+MpeProfileNegotiation::MpeProfileNegotiation()
 {
     ci_ = std::make_unique<ci::Device>(ci::DeviceOptions()
                                        .withFeatures(ci::DeviceFeatures().withProfileConfigurationSupported())
@@ -58,7 +58,8 @@ MpeProfileNegotiation::MpeProfileNegotiation(ApplicationState* state)
 void MpeProfileNegotiation::setProfileMidiName(const String& name)
 {
     midiName_ = name;
-    
+
+#if (JUCE_LINUX || JUCE_MAC)
     if (profileMidiIn_ != nullptr)
     {
         profileMidiIn_->stop();
@@ -71,6 +72,10 @@ void MpeProfileNegotiation::setProfileMidiName(const String& name)
     
     profileMidiOut_ = MidiOutput::createNewDevice(midiName_);
     std::cout << "Responder " << muidToString(ci_->getMuid()) << " waiting for MPE Profile negotiation on " << (manager_ == 0 ? "all channels" : String("channel ") + String(manager_)) << std::endl;
+#else
+    std::cerr << "MPE Profile responder with virtual MIDI ports is not supported on Windows" << std::endl;
+    JUCEApplicationBase::getInstance()->setApplicationReturnValue(EXIT_FAILURE);
+#endif
 }
 
 void MpeProfileNegotiation::setManager(int manager)
@@ -122,7 +127,7 @@ std::string MpeProfileNegotiation::muidToString(ci::MUID muid)
     return s.str();
 }
 
-void MpeProfileNegotiation::handleIncomingMidiMessage(MidiInput* source, const MidiMessage& msg)
+void MpeProfileNegotiation::handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg)
 {
     if (msg.isSysEx())
     {
@@ -141,7 +146,7 @@ void MpeProfileNegotiation::profileEnablementRequested(ci::MUID muid, ci::Profil
     {
         if (enabledProfile_)
         {
-            disableProfile(muid, profileAtAddress);
+            disableProfile(muid);
         }
         
         auto activated_channels = numChannels;
@@ -159,11 +164,11 @@ void MpeProfileNegotiation::profileEnablementRequested(ci::MUID muid, ci::Profil
     }
     else
     {
-        disableProfile(muid, profileAtAddress);
+        disableProfile(muid);
     }
 }
 
-void MpeProfileNegotiation::disableProfile(ci::MUID muid, ci::ProfileAtAddress profileAtAddress)
+void MpeProfileNegotiation::disableProfile(ci::MUID muid)
 {
     std::cout << muidToString(muid) << " : MPE Profile disabled with manager channel " << ((int)enabledProfileAddress_.address.getChannel() + 1) << std::endl;
     ci_->getProfileHost()->setProfileEnablement(enabledProfileAddress_, -1);
@@ -171,7 +176,7 @@ void MpeProfileNegotiation::disableProfile(ci::MUID muid, ci::ProfileAtAddress p
     enabledProfileAddress_ = ci::ProfileAtAddress();
 }
 
-std::vector<std::byte> MpeProfileNegotiation::profileDetailsInquired(ci::MUID muid, ci::ProfileAtAddress profileAtAddress, std::byte target)
+std::vector<std::byte> MpeProfileNegotiation::profileDetailsInquired(ci::MUID muid, ci::ProfileAtAddress, std::byte target)
 {
     std::cout << muidToString(muid) << " : MPE Profile details inquired for optional features" << std::endl;
     if (target == std::byte(TARGET_FEATURES_SUPPORTED))

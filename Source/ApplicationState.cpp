@@ -92,7 +92,7 @@ ApplicationState::ApplicationState()
     rawdump_ = false;
     currentCommand_ = ApplicationCommand::Dummy();
     
-    mpeProfile_ = std::make_unique<MpeProfileNegotiation>(this);
+    mpeProfile_ = std::make_unique<MpeProfileNegotiation>();
     
     // initialize last CC MSB values
     for (int ch = 0; ch < 16; ++ch)
@@ -427,13 +427,13 @@ void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState displa
         {
             if (display.displayControlChange14bit)
             {
-                uint8 msb_cc = msg.getControllerNumber();
+                uint8 msb_cc = (uint8)msg.getControllerNumber();
                 if (msb_cc >= 32)
                 {
                     msb_cc -= 32;
                 }
-                uint8 lsb_cc = msb_cc + 32;
-                uint8 ch = msg.getChannel() - 1;
+                uint8 lsb_cc = (uint8)msb_cc + 32;
+                uint8 ch = (uint8)msg.getChannel() - 1;
                 uint16 v = ((lastCC_[ch][msb_cc] & 0x7f) << 7) | (lastCC_[ch][lsb_cc] & 0x7f);
                 std::cout << "channel "  << outputChannel(msg) << "   " <<
                              "cc14             " << output7Bit(msb_cc).paddedLeft(' ', 3) << " "
@@ -769,7 +769,7 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
             mpeProfile_->setProfileMidiName(cmd.opts_[0]);
 #else
             std::cerr << "MPE Profile responder with virtual MIDI ports is not supported on Windows" << std::endl;
-            setApplicationReturnValue(EXIT_FAILURE);
+            JUCEApplicationBase::getInstance()->setApplicationReturnValue(EXIT_FAILURE);
 #endif
             break;
         }
@@ -909,10 +909,10 @@ void ApplicationState::printUsage()
             for (; i < cmd.optionsDescriptions_.size(); ++i)
             {
                 auto line = cmd.optionsDescriptions_.getReference(i);
-                String param_option;
-                param_option << "        " << line.paddedRight(' ', 9) << "  ";
-                param_option = param_option.substring(0, 19);
-                std::cout << param_option;
+                String param_option2;
+                param_option2 << "        " << line.paddedRight(' ', 9) << "  ";
+                param_option2 = param_option2.substring(0, 19);
+                std::cout << param_option2;
                 
                 if (i < cmd.commandDescriptions_.size())
                 {
