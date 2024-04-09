@@ -1,10 +1,7 @@
 Builds/*/build
 Builds/MacOSX/*.xcodeproj/xcuserdata
 Builds/MacOSX/receivemidi.xcodeproj/project.xcworkspace/xcuserdata
-/Builds/VisualStudio2015/Release
-/Builds/VisualStudio2015/receivemidi.VC.db
-/Builds/VisualStudio2015/receivemidi.VC.VC.opendb
-/Builds/VisualStudio2017/.vs/receivemidi
 /.vs
-/Builds/VisualStudio2017/x64/Debug/ConsoleApp
+/Builds/VisualStudio2017/.vs
+/Builds/VisualStudio2017/x64
 /Builds/VisualStudio2017/receivemidi_ConsoleApp.vcxproj.user
