@@ -83,8 +83,17 @@ These are all the supported commands:
   ss               Show Song Select
   tun              Show Tune Request
   q                Don't show the received messages on standard output
+  dump             Dump the received messages 1:1 on standard output
   js    code       Execute this script for each received MIDI message
   jsf   path       Execute the script in this file for each message
+  mpp   name       Configure responder MPE Profile creating virtual MIDI input
+        manager    and output ports with the provided name, available manager
+        members    channel (1-15 or 0 for any) and desired member channel
+                   count (1-15, or 0 for any) (Linux/macOS)
+  mcr   flag       Sets MPE Profile channel response feature (0-1)
+  mpb   flag       Sets MPE Profile pitch bend feature (0-1)
+  mcp   flag       Sets MPE Profile channel pressure feature (0-2)
+  m3d   flag       Sets MPE Profile 3rd dimension feature (0-2)
   -h  or  --help   Print Help (this message) and exit
   --version        Print version information and exit
   --               Read commands from standard input until it's closed
@@ -97,7 +106,8 @@ Alternatively, you can use the following long versions of the commands:
   control-change-14 nrpn-full rpn-full program-change channel-pressure
   pitch-bend system-realtime continue active-sensing reset system-common
   system-exclusive system-exclusive-file time-code song-position song-select
-  tune-request quiet javascript javascript-file
+  tune-request quiet javascript javascript-file mpe-profile mpe-channel-reponse
+  mpe-pitch-bend mpe-channel-pressure mpe-3rd-dimension
 ```
 
 By default, numbers are interpreted in the decimal system, this can be changed to hexadecimal by sending the "hex" command.
