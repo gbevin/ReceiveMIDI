@@ -39,6 +39,8 @@ public:
 private:
     static std::string muidToString(ci::MUID muid);
 
+    void addMpeProfile(int manager);
+
     virtual void handleIncomingMidiMessage(MidiInput* source,
                                            const MidiMessage& message) override;
 

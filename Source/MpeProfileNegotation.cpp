@@ -45,18 +45,30 @@ MpeProfileNegotiation::MpeProfileNegotiation()
                                        .withOutputs({ this })
                                        .withProfileDelegate(this));
     ci_->addListener(*this);
-
-    // support the MPE Profile on any channel as the manager channel, except on channel 16
-    // we support all the possible channels upwards from the manager channel
-    for (int ch = 0x0; ch <= 0xE; ++ch)
-    {
-        auto max_channels = 0xF - ch + 1;
-        ci_->getProfileHost()->addProfile({ MPE_PROFILE, ci::ChannelAddress().withChannel((ci::ChannelInGroup)ch) }, max_channels);
-    }
 }
 
 void MpeProfileNegotiation::setProfileMidiName(const String& name)
 {
+    // remove all registered profiles
+    for (int ch = 0x0; ch <= 0xE; ++ch)
+    {
+        ci_->getProfileHost()->removeProfile({ MPE_PROFILE, ci::ChannelAddress().withChannel((ci::ChannelInGroup)ch) });
+    }
+    
+    // register profiles for all active manager channels
+    if (manager_ == 0)
+    {
+        // support the MPE Profile on any channel as the manager channel, except on channel 16
+        for (int ch = 0x0; ch <= 0xE; ++ch)
+        {
+            addMpeProfile(ch);
+        }
+    }
+    else if (manager_ > 0)
+    {
+        addMpeProfile(manager_ - 1);
+    }
+
     midiName_ = name;
 
 #if (JUCE_LINUX || JUCE_MAC)
@@ -76,6 +88,16 @@ void MpeProfileNegotiation::setProfileMidiName(const String& name)
     std::cerr << "MPE Profile responder with virtual MIDI ports is not supported on Windows" << std::endl;
     JUCEApplicationBase::getInstance()->setApplicationReturnValue(EXIT_FAILURE);
 #endif
+}
+
+void MpeProfileNegotiation::addMpeProfile(int manager)
+{
+    auto max_channels = 0xF - manager + 1;
+    if (members_ > 0)
+    {
+        max_channels = std::min(members_ + 1, max_channels);
+    }
+    ci_->getProfileHost()->addProfile({ MPE_PROFILE, ci::ChannelAddress().withChannel((ci::ChannelInGroup)manager) }, max_channels);
 }
 
 void MpeProfileNegotiation::setManager(int manager)
