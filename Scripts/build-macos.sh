@@ -35,7 +35,7 @@ pkgbuild --root "${BUILD_DIR}/Release" --identifier com.uwyn.receivemidi --versi
 echo "Notarizating installer"
 xcrun notarytool submit "${BUILD_DIR}/${PKG_FILE}" --keychain-profile "notary-uwyn.com" --wait
 xcrun stapler staple "${BUILD_DIR}/${PKG_FILE}"
-spctl --assess -vv --type install "${PKG_FILE}"
+spctl --assess -vv --type install "${BUILD_DIR}/${PKG_FILE}"
 
 echo "Creating zip archive of installer"
 pushd "${BUILD_DIR}"
