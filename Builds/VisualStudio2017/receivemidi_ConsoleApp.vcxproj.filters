@@ -1194,6 +1194,9 @@
     <ClInclude Include="..\..\Source\ApplicationState.h">
       <Filter>receivemidi\Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\DisplayState.h">
+      <Filter>receivemidi\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\MpeProfileNegotiation.h">
       <Filter>receivemidi\Source</Filter>
     </ClInclude>

@@ -1055,6 +1055,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source\ApplicationCommand.h"/>
     <ClInclude Include="..\..\Source\ApplicationState.h"/>
+    <ClInclude Include="..\..\Source\DisplayState.h"/>
     <ClInclude Include="..\..\Source\MpeProfileNegotiation.h"/>
     <ClInclude Include="..\..\Source\ScriptMidiMessageClass.h"/>
     <ClInclude Include="..\..\Source\ScriptOscClass.h"/>

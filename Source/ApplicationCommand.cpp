@@ -35,7 +35,7 @@ void ApplicationCommand::clear()
     opts_.clear();
 }
 
-void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg, DisplayState& display)
+void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg, DisplayState& display) const
 {
     switch (command_)
     {
@@ -203,7 +203,7 @@ void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg,
     }
 }
 
-bool ApplicationCommand::checkChannel(const MidiMessage& msg, int channel)
+bool ApplicationCommand::checkChannel(const MidiMessage& msg, int channel) const
 {
     return channel == 0 || msg.getChannel() == channel;
 }

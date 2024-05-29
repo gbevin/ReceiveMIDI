@@ -20,6 +20,8 @@
 
 #include "JuceHeader.h"
 
+#include "DisplayState.h"
+
 enum CommandIndex
 {
     NONE,
@@ -75,23 +77,13 @@ enum CommandIndex
 
 class ApplicationState;
 
-struct DisplayState
-{
-    bool filtered { false };
-    int channel { 0 };
-    bool displayControlChange { true };
-    bool displayControlChange14bit { false };
-    bool displayNrpn { false };
-    bool displayRpn { false };
-};
-
 struct ApplicationCommand
 {
     static ApplicationCommand Dummy();
     
     void clear();
-    void filter(ApplicationState& state, const MidiMessage& msg, DisplayState& display);
-    bool checkChannel(const MidiMessage& msg, int channel);
+    void filter(ApplicationState& state, const MidiMessage& msg, DisplayState& display) const;
+    bool checkChannel(const MidiMessage& msg, int channel) const;
     
     String param_;
     String altParam_;

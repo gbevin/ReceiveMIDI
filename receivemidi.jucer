@@ -15,6 +15,7 @@
             file="Source/ApplicationState.cpp"/>
       <FILE id="GBoGkP" name="ApplicationState.h" compile="0" resource="0"
             file="Source/ApplicationState.h"/>
+      <FILE id="bbj9mA" name="DisplayState.h" compile="0" resource="0" file="Source/DisplayState.h"/>
       <FILE id="hGRRus" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="dcYqFP" name="MpeProfileNegotation.cpp" compile="1" resource="0"
             file="Source/MpeProfileNegotation.cpp"/>

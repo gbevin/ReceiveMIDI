@@ -33,9 +33,11 @@ public:
     
     static std::unique_ptr<MidiOutput> openOutputDevice(const String& name);
 
-    uint8 asNoteNumber(String value);
-    uint8 asDecOrHex7BitValue(String value);
-    uint16 asDecOrHex14BitValue(String value);
+    uint8 asNoteNumber(String value) const;
+    uint8 asDecOrHex7BitValue(String value) const;
+    uint16 asDecOrHex14BitValue(String value) const;
+    
+    void outputMessage(const MidiMessage& msg, DisplayState& display) const;
 
     MidiRPNDetector rpnDetector_;
     MidiRPNMessage rpnMsg_;
@@ -54,18 +56,17 @@ private:
     void parseParameters(StringArray& parameters);
     void parseFile(File file);
     void handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg) override;
-    void dumpMessage(const MidiMessage& msg);
-    void outputMessage(const MidiMessage& msg, DisplayState display);
-    String output7BitAsHex(int v);
-    String output7Bit(int v);
-    String output14BitAsHex(int v);
-    String output14Bit(int v);
-    String outputNote(const MidiMessage& msg);
-    String outputChannel(const MidiMessage& msg);
+    void dumpMessage(const MidiMessage& msg) const;
+    String output7BitAsHex(int v) const;
+    String output7Bit(int v) const;
+    String output14BitAsHex(int v) const;
+    String output14Bit(int v) const;
+    String outputNote(const MidiMessage& msg) const;
+    String outputChannel(const MidiMessage& msg) const;
     bool tryToConnectMidiInput();
     void executeCommand(ApplicationCommand& cmd);
     
-    int asDecOrHexIntValue(String value);
+    int asDecOrHexIntValue(String value) const;
     static uint8 limit7Bit(int value);
     static uint16 limit14Bit(int value);
     void printVersion();

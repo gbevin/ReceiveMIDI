@@ -121,7 +121,7 @@ void ApplicationState::initialise(JUCEApplicationBase& app)
     }
     
     scriptEngine_.maximumExecutionTime = RelativeTime::days(365);
-    scriptMidiMessage_ = new ScriptMidiMessageClass();
+    scriptMidiMessage_ = new ScriptMidiMessageClass(*this);
     scriptEngine_.registerNativeObject("MIDI",  scriptMidiMessage_);
     scriptEngine_.registerNativeObject("OSC",   new ScriptOscClass());
     scriptEngine_.registerNativeObject("Util",  new ScriptUtilClass());
@@ -374,28 +374,31 @@ void ApplicationState::handleIncomingMidiMessage(MidiInput*, const MidiMessage& 
     
     if (scriptCode_.isNotEmpty())
     {
+        scriptMidiMessage_->setDisplayState(display);
         scriptMidiMessage_->setMidiMessage(msg);
         scriptEngine_.execute(scriptCode_);
     }
     
     if (!quiet_)
     {
-        if (rawdump_) {
+        if (rawdump_)
+        {
             dumpMessage(msg);
         }
-        else {
+        else
+        {
             outputMessage(msg, display);
         }
     }
 }
 
-void ApplicationState::dumpMessage(const MidiMessage& msg)
+void ApplicationState::dumpMessage(const MidiMessage& msg) const
 {
     std::cout.write((char *)msg.getRawData(), msg.getRawDataSize());
     std::cout.flush();
 }
 
-void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState display)
+void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState& display) const
 {
     if (timestampOutput_)
     {
@@ -550,12 +553,12 @@ void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState displa
     }
 }
 
-String ApplicationState::output7BitAsHex(int v)
+String ApplicationState::output7BitAsHex(int v) const
 {
     return String::toHexString(v).paddedLeft('0', 2).toUpperCase();
 }
 
-String ApplicationState::output7Bit(int v)
+String ApplicationState::output7Bit(int v) const
 {
     if (useHexadecimalsByDefault_)
     {
@@ -567,12 +570,12 @@ String ApplicationState::output7Bit(int v)
     }
 }
 
-String ApplicationState::output14BitAsHex(int v)
+String ApplicationState::output14BitAsHex(int v) const
 {
     return String::toHexString(v).paddedLeft('0', 4).toUpperCase();
 }
 
-String ApplicationState::output14Bit(int v)
+String ApplicationState::output14Bit(int v) const
 {
     if (useHexadecimalsByDefault_)
     {
@@ -584,7 +587,7 @@ String ApplicationState::output14Bit(int v)
     }
 }
 
-String ApplicationState::outputNote(const MidiMessage& msg)
+String ApplicationState::outputNote(const MidiMessage& msg) const
 {
     if (noteNumbersOutput_)
     {
@@ -596,7 +599,7 @@ String ApplicationState::outputNote(const MidiMessage& msg)
     }
 }
 
-String ApplicationState::outputChannel(const MidiMessage& msg)
+String ApplicationState::outputChannel(const MidiMessage& msg) const
 {
     return output7Bit(msg.getChannel()).paddedLeft(' ', 2);
 }
@@ -791,7 +794,7 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
     }
 }
 
-uint8 ApplicationState::asNoteNumber(String value)
+uint8 ApplicationState::asNoteNumber(String value) const
 {
     if (value.length() >= 2)
     {
@@ -830,17 +833,17 @@ uint8 ApplicationState::asNoteNumber(String value)
     return (uint8)limit7Bit(asDecOrHexIntValue(value));
 }
 
-uint8 ApplicationState::asDecOrHex7BitValue(String value)
+uint8 ApplicationState::asDecOrHex7BitValue(String value) const
 {
     return (uint8)limit7Bit(asDecOrHexIntValue(value));
 }
 
-uint16 ApplicationState::asDecOrHex14BitValue(String value)
+uint16 ApplicationState::asDecOrHex14BitValue(String value) const
 {
     return (uint16)limit14Bit(asDecOrHexIntValue(value));
 }
 
-int ApplicationState::asDecOrHexIntValue(String value)
+int ApplicationState::asDecOrHexIntValue(String value) const
 {
     if (value.endsWithIgnoreCase("H"))
     {

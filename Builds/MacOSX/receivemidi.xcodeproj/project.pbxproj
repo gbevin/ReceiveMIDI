@@ -43,6 +43,7 @@
 		3973848B1FB155637755C9F9 /* ScriptMidiMessageClass.cpp */ /* ScriptMidiMessageClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ScriptMidiMessageClass.cpp; path = ../../Source/ScriptMidiMessageClass.cpp; sourceTree = SOURCE_ROOT; };
 		39BBB61E6B2796DB8C72B46D /* CoreAudio.framework */ /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		3B899882E9F48AFC64E535EF /* include_juce_midi_ci.cpp */ /* include_juce_midi_ci.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_midi_ci.cpp; path = ../../JuceLibraryCode/include_juce_midi_ci.cpp; sourceTree = SOURCE_ROOT; };
+		406B782DC08E1F049F1376E0 /* DisplayState.h */ /* DisplayState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DisplayState.h; path = ../../Source/DisplayState.h; sourceTree = SOURCE_ROOT; };
 		52AE88A364FFF2111D8EF313 /* include_juce_osc.cpp */ /* include_juce_osc.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_osc.cpp; path = ../../JuceLibraryCode/include_juce_osc.cpp; sourceTree = SOURCE_ROOT; };
 		5D3F4C219DB9D465708B6231 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		7113DF850C738FF287669BA9 /* ScriptOscClass.cpp */ /* ScriptOscClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ScriptOscClass.cpp; path = ../../Source/ScriptOscClass.cpp; sourceTree = SOURCE_ROOT; };
@@ -155,6 +156,7 @@
 				DC5DE2D8CB9AF98F01AC1EAB,
 				28F1F23438CA15D2AF8C89C3,
 				B3F525C4B60601DCE10BD37C,
+				406B782DC08E1F049F1376E0,
 				B2451D1DBA700503A8FEDC18,
 				72686C5762C0131F6547BE59,
 				F49CC32851912CFDB16D532C,

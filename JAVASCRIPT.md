@@ -66,6 +66,8 @@ MIDI.getRawDataSize();
 MIDI.rawData();           // array
 MIDI.rawDataSize();
 
+MIDI.output();            // outputs the message to stdout like ReceiveMIDI formats it
+
 MIDI.getDescription();
 MIDI.description();
 

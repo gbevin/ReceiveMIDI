@@ -18,12 +18,15 @@
 
 #include "ScriptMidiMessageClass.h"
 
-ScriptMidiMessageClass::ScriptMidiMessageClass()
+#include "ApplicationState.h"
+
+ScriptMidiMessageClass::ScriptMidiMessageClass(ApplicationState& state) : applicationState_(state)
 {
     setMethod("getRawData", getRawData);
     setMethod("rawData", getRawData);
     setMethod("getRawDataSize", getRawDataSize);
     setMethod("rawDataSize", getRawDataSize);
+    setMethod("output", output);
 
     setMethod("getDescription", getDescription);
     setMethod("description", getDescription);
@@ -98,9 +101,12 @@ ScriptMidiMessageClass::ScriptMidiMessageClass()
     setMethod("songPositionPointerMidiBeat", getSongPositionPointerMidiBeat);
 }
 
+void ScriptMidiMessageClass::setDisplayState(DisplayState state)                                { displayState_ = state; }
 void ScriptMidiMessageClass::setMidiMessage(MidiMessage msg)                                    { msg_ = msg; }
 
 const MidiMessage& ScriptMidiMessageClass::getMsg(const var::NativeFunctionArgs& a)             { return ((ScriptMidiMessageClass*)a.thisObject.getDynamicObject())->msg_; }
+ApplicationState& ScriptMidiMessageClass::getApplicationState(const var::NativeFunctionArgs& a) { return ((ScriptMidiMessageClass*)a.thisObject.getDynamicObject())->applicationState_; }
+DisplayState& ScriptMidiMessageClass::getDisplayState(const var::NativeFunctionArgs& a)         { return ((ScriptMidiMessageClass*)a.thisObject.getDynamicObject())->displayState_; }
 
 var ScriptMidiMessageClass::getRawDataSize(const var::NativeFunctionArgs& a)                    { return getMsg(a).getRawDataSize(); }
 var ScriptMidiMessageClass::getDescription(const var::NativeFunctionArgs& a)                    { return getMsg(a).getDescription(); }
@@ -178,4 +184,11 @@ var ScriptMidiMessageClass::getSysExData(const var::NativeFunctionArgs& a)
     }
     
     return data;
+}
+
+var ScriptMidiMessageClass::output(const var::NativeFunctionArgs& a)
+{
+    getApplicationState(a).outputMessage(getMsg(a), getDisplayState(a));
+    
+    return true;
 }

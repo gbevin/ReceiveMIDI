@@ -20,17 +20,25 @@
 
 #include "JuceHeader.h"
 
+#include "DisplayState.h"
+
+class ApplicationState;
+
 class ScriptMidiMessageClass : public DynamicObject
 {
 public:
-    ScriptMidiMessageClass();
+    ScriptMidiMessageClass(ApplicationState& state);
     
+    void setDisplayState(DisplayState state);
     void setMidiMessage(MidiMessage msg);
     
     static const MidiMessage& getMsg(const var::NativeFunctionArgs&);
+    static ApplicationState& getApplicationState(const var::NativeFunctionArgs&);
+    static DisplayState& getDisplayState(const var::NativeFunctionArgs&);
     
     static var getRawData(const var::NativeFunctionArgs&);
     static var getRawDataSize(const var::NativeFunctionArgs&);
+    static var output(const var::NativeFunctionArgs&);
     
     static var getDescription(const var::NativeFunctionArgs&);
     
@@ -84,6 +92,8 @@ public:
     static var getSongPositionPointerMidiBeat(const var::NativeFunctionArgs&);
 
 private:
+    ApplicationState& applicationState_;
+    DisplayState displayState_;
     MidiMessage msg_;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ScriptMidiMessageClass)
