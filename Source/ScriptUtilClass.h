@@ -26,6 +26,7 @@ public:
     ScriptUtilClass();
     
     static var command(const var::NativeFunctionArgs&);
+    static var print(const var::NativeFunctionArgs&);
     static var println(const var::NativeFunctionArgs&);
     static var sleep(const var::NativeFunctionArgs&);
     

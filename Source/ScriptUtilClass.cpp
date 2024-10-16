@@ -21,6 +21,7 @@
 ScriptUtilClass::ScriptUtilClass()
 {
     setMethod("command", command);
+    setMethod("print", print);
     setMethod("println", println);
     setMethod("sleep", sleep);
 }
@@ -54,6 +55,16 @@ var ScriptUtilClass::command(const var::NativeFunctionArgs& a)
     {
         std::cerr << "Script function Util.command('" << cmd << "') couldn't be started." << std::endl;
     }
+    
+    return true;
+}
+
+var ScriptUtilClass::print(const var::NativeFunctionArgs& a)
+{
+    if (a.numArguments == 0) return false;
+    
+    String out = toString(a);
+    std::cout << out;
     
     return true;
 }

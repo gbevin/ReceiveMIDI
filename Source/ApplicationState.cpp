@@ -376,7 +376,11 @@ void ApplicationState::handleIncomingMidiMessage(MidiInput*, const MidiMessage& 
     {
         scriptMidiMessage_->setDisplayState(display);
         scriptMidiMessage_->setMidiMessage(msg);
-        scriptEngine_.execute(scriptCode_);
+        auto result = scriptEngine_.execute(scriptCode_);
+        if (result.failed())
+        {
+            std::cerr << result.getErrorMessage() << std::endl;
+        }
     }
     
     if (!quiet_)

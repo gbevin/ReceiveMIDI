@@ -47,7 +47,8 @@ Additionally to all the usual JavaScript primitives and commands, ReceiveMIDI pr
 
 ```javascript
 Util.command('/full/path/to/executable arguments');
-Util.println('some text');
+Util.print('some text');
+Util.println('some text with newline');
 Util.sleep(<milliseconds>);
 ```
 
