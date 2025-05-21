@@ -196,7 +196,7 @@ sudo apt install build-essential pkg-config libasound2-dev
 After that, go to the `LinuxMakeFile` directory
 
 ```
-cd Builds/LinuxMakeFile
+cd Builds/LinuxMakefile
 ```
 
 and build the binary by typing `make`
