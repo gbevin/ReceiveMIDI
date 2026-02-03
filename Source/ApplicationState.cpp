@@ -32,9 +32,13 @@ inline float sign(float value)
 ApplicationState::ApplicationState()
 {
     commands_.add({"dev",   "device",                   DEVICE,                1, {"name"},             {"Set the name of the MIDI input port"}});
+    commands_.add({"devindex", "device-index",          DEVICE_INDEX,          1, {"index"},            {"Set MIDI input port by index (see listi)"}});
     commands_.add({"virt",  "virtual",                  VIRTUAL,              -1, {"(name)"},           {"Use virtual MIDI port with optional name (Linux/macOS)"}});
     commands_.add({"pass",  "pass-through",             PASSTHROUGH,           1, {"name"},             {"Set name of MIDI output port for MIDI pass-through"}});
+    commands_.add({"passindex", "pass-through-index",   PASSTHROUGH_INDEX,     1, {"index"},            {"Set MIDI output port by index (see listo)"}});
     commands_.add({"list",  "",                         LIST,                  0, {""},                 {"Lists the MIDI input ports"}});
+    commands_.add({"listi", "list-index",               LIST_INDEX,            0, {""},                 {"Lists the MIDI input ports with indices"}});
+    commands_.add({"listo", "list-output",              LIST_OUTPUT,           0, {""},                 {"Lists the MIDI output ports"}});
     commands_.add({"file",  "",                         TXTFILE,               1, {"path"},             {"Loads commands from the specified program file"}});
     commands_.add({"dec",   "decimal",                  DECIMAL,               0, {""},                 {"Interpret the next numbers as decimals by default"}});
     commands_.add({"hex",   "hexadecimal",              HEXADECIMAL,           0, {""},                 {"Interpret the next numbers as hexadecimals by default"}});
@@ -153,6 +157,17 @@ void ApplicationState::initialise(JUCEApplicationBase& app)
 bool ApplicationState::isMidiInDeviceAvailable(const String& name)
 {
     auto devices = MidiInput::getAvailableDevices();
+    if (midiInIdentifier_.isNotEmpty())
+    {
+        for (int i = 0; i < devices.size(); ++i)
+        {
+            if (devices[i].identifier == midiInIdentifier_)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     for (int i = 0; i < devices.size(); ++i)
     {
         if (devices[i].name == name)
@@ -172,7 +187,7 @@ void ApplicationState::timerCallback()
         fullMidiInName_ = String();
         midiIn_ = nullptr;
     }
-    else if ((midiInName_.isNotEmpty() && midiIn_ == nullptr))
+    else if ((midiIn_ == nullptr) && (midiInName_.isNotEmpty() || midiInIdentifier_.isNotEmpty()))
     {
         if (tryToConnectMidiInput())
         {
@@ -237,11 +252,33 @@ void ApplicationState::openInputDevice(const String& name)
 {
     midiIn_ = nullptr;
     midiInName_ = name;
+    midiInIdentifier_.clear();
     
     if (!tryToConnectMidiInput())
     {
         std::cerr << "Couldn't find MIDI input port \"" << name << "\", waiting" << std::endl;
     }
+}
+
+void ApplicationState::openInputDeviceByIndex(int index)
+{
+    midiIn_ = nullptr;
+    midiInName_.clear();
+    fullMidiInName_.clear();
+    midiInIdentifier_.clear();
+    
+    auto devices = MidiInput::getAvailableDevices();
+    if (index >= 0 && index < devices.size())
+    {
+        midiInIdentifier_ = devices[index].identifier;
+        if (tryToConnectMidiInput())
+        {
+            return;
+        }
+    }
+    
+    std::cerr << "Couldn't open MIDI input port with index " << index << std::endl;
+    JUCEApplicationBase::getInstance()->setApplicationReturnValue(EXIT_FAILURE);
 }
 
 std::unique_ptr<MidiOutput> ApplicationState::openOutputDevice(const String& name)
@@ -280,6 +317,23 @@ std::unique_ptr<MidiOutput> ApplicationState::openOutputDevice(const String& nam
     }
     
     return output;
+}
+
+std::unique_ptr<MidiOutput> ApplicationState::openOutputDeviceByIndex(int index)
+{
+    auto devices = MidiOutput::getAvailableDevices();
+    if (index >= 0 && index < devices.size())
+    {
+        auto output = MidiOutput::openDevice(devices[index].identifier);
+        if (output)
+        {
+            return output;
+        }
+    }
+    
+    std::cerr << "Couldn't open MIDI output port with index " << index << std::endl;
+    JUCEApplicationBase::getInstance()->setApplicationReturnValue(EXIT_FAILURE);
+    return nullptr;
 }
 
 void ApplicationState::parseParameters(StringArray& parameters)
@@ -614,17 +668,34 @@ bool ApplicationState::tryToConnectMidiInput()
     String midi_input_name;
     
     auto devices = MidiInput::getAvailableDevices();
-    for (int i = 0; i < devices.size(); ++i)
+    if (midiInIdentifier_.isNotEmpty())
     {
-        if (devices[i].name == midiInName_)
+        for (int i = 0; i < devices.size(); ++i)
         {
-            midi_input = MidiInput::openDevice(devices[i].identifier, this);
-            midi_input_name = devices[i].name;
-            break;
+            if (devices[i].identifier == midiInIdentifier_)
+            {
+                midi_input = MidiInput::openDevice(devices[i].identifier, this);
+                midi_input_name = devices[i].name;
+                break;
+            }
         }
     }
     
-    if (midi_input == nullptr)
+    if (midi_input == nullptr && midiInName_.isNotEmpty())
+    {
+        for (int i = 0; i < devices.size(); ++i)
+        {
+            if (devices[i].name == midiInName_)
+            {
+                midi_input = MidiInput::openDevice(devices[i].identifier, this);
+                midi_input_name = devices[i].name;
+                midiInIdentifier_ = devices[i].identifier;
+                break;
+            }
+        }
+    }
+    
+    if (midi_input == nullptr && midiInName_.isNotEmpty())
     {
         for (int i = 0; i < devices.size(); ++i)
         {
@@ -632,6 +703,7 @@ bool ApplicationState::tryToConnectMidiInput()
             {
                 midi_input = MidiInput::openDevice(devices[i].identifier, this);
                 midi_input_name = devices[i].name;
+                midiInIdentifier_ = devices[i].identifier;
                 break;
             }
         }
@@ -655,15 +727,42 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
         case NONE:
             break;
         case LIST:
+        {
             for (auto&& device : MidiInput::getAvailableDevices())
             {
                 std::cout << device.name << std::endl;
             }
             JUCEApplicationBase::getInstance()->systemRequestedQuit();
             break;
+        }
+        case LIST_INDEX:
+        {
+            auto devices = MidiInput::getAvailableDevices();
+            for (int i = 0; i < devices.size(); ++i)
+            {
+                std::cout << i << " " << devices[i].name << std::endl;
+            }
+            JUCEApplicationBase::getInstance()->systemRequestedQuit();
+            break;
+        }
+        case LIST_OUTPUT:
+        {
+            auto devices = MidiOutput::getAvailableDevices();
+            for (int i = 0; i < devices.size(); ++i)
+            {
+                std::cout << i << " " << devices[i].name << std::endl;
+            }
+            JUCEApplicationBase::getInstance()->systemRequestedQuit();
+            break;
+        }
         case DEVICE:
         {
             openInputDevice(cmd.opts_[0]);
+            break;
+        }
+        case DEVICE_INDEX:
+        {
+            openInputDeviceByIndex(cmd.opts_[0].getIntValue());
             break;
         }
         case VIRTUAL:
@@ -695,6 +794,11 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
         case PASSTHROUGH:
         {
             midiPass_ = openOutputDevice(cmd.opts_[0]);
+            break;
+        }
+        case PASSTHROUGH_INDEX:
+        {
+            midiPass_ = openOutputDeviceByIndex(cmd.opts_[0].getIntValue());
             break;
         }
         case TXTFILE:

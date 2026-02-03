@@ -53,6 +53,8 @@ private:
     void executeCurrentCommand();
     void handleVarArgCommand();
     void openInputDevice(const String& name);
+    void openInputDeviceByIndex(int index);
+    std::unique_ptr<MidiOutput> openOutputDeviceByIndex(int index);
     void parseParameters(StringArray& parameters);
     void parseFile(File file);
     void handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg) override;
@@ -87,6 +89,7 @@ private:
     bool rawdump_;
     
     String midiInName_;
+    String midiInIdentifier_;
     std::unique_ptr<MidiInput> midiIn_;
     String fullMidiInName_;
     
