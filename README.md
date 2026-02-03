@@ -44,9 +44,13 @@ To use it, simply type "receivemidi" or "receivemidi.exe" on the command line an
 These are all the supported commands:
 ```
   dev   name       Set the name of the MIDI input port
+  devindex index   Set MIDI input port by index (see listi)
   virt  (name)     Use virtual MIDI port with optional name (Linux/macOS)
   pass  name       Set name of MIDI output port for MIDI pass-through
+  passindex index  Set MIDI output port by index (see listo)
   list             Lists the MIDI input ports
+  listi            Lists the MIDI input ports with indices
+  listo            Lists the MIDI output ports
   file  path       Loads commands from the specified program file
   dec              Interpret the next numbers as decimals by default
   hex              Interpret the next numbers as hexadecimals by default
@@ -101,7 +105,7 @@ These are all the supported commands:
 
 Alternatively, you can use the following long versions of the commands:
 ```
-  device virtual pass-through decimal hexadecimal channel timestamp
+  device device-index virtual pass-through pass-through-index list-index list-output decimal hexadecimal channel timestamp
   note-numbers octave-middle-c note-on note-off poly-pressure control-change
   control-change-14 nrpn-full rpn-full program-change channel-pressure
   pitch-bend system-realtime continue active-sensing reset system-common

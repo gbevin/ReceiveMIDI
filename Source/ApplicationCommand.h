@@ -26,9 +26,13 @@ enum CommandIndex
 {
     NONE,
     LIST,
+    LIST_INDEX,
+    LIST_OUTPUT,
     DEVICE,
+    DEVICE_INDEX,
     VIRTUAL,
     PASSTHROUGH,
+    PASSTHROUGH_INDEX,
     TXTFILE,
     DECIMAL,
     HEXADECIMAL,
