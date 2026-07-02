@@ -218,3 +218,9 @@ The output of the ReceiveMIDI tool is compatible with the SendMIDI tool, allowin
 If you changed the octave for middle C or are outputting hexadecimal numbers instead of the default decimal numbers, make sure that you set up SendMIDI with the same parameters.
 
 SendMIDI can be downloaded from https://github.com/gbevin/SendMIDI
+
+## RouteMIDI
+
+If you want to route, filter, transform and convert MIDI messages between ports, take a look at RouteMIDI. It reads and writes the same text MIDI format as ReceiveMIDI, so it slots into the same command-line pipes.
+
+RouteMIDI can be downloaded from https://github.com/gbevin/RouteMIDI
