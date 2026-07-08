@@ -48,6 +48,14 @@ jobs:
         if: runner.os == 'macOS'
         run: ./Builds/MacOSX/build/Release/receivemidi --version | grep -q "receivemidi v"
 
+      - name: End-to-end test (macOS)
+        if: runner.os == 'macOS'
+        # sends through a virtual MIDI port with sendmidi and checks what
+        # receivemidi prints; the script skips cleanly if the runner has no MIDI
+        run: |
+          brew install gbevin/tools/sendmidi
+          ./Scripts/e2e-test.sh ./Builds/MacOSX/build/Release/receivemidi
+
       # ---------------------------------------------------------------- Linux
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
