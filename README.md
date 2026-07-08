@@ -1,5 +1,9 @@
 # ReceiveMIDI
 
+[![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](COPYING.md)
+[![Release](https://img.shields.io/github/v/release/gbevin/ReceiveMIDI?sort=semver)](https://github.com/gbevin/ReceiveMIDI/releases/latest)
+[![CI](https://github.com/gbevin/ReceiveMIDI/actions/workflows/ci.yml/badge.svg)](https://github.com/gbevin/ReceiveMIDI/actions/workflows/ci.yml)
+
 ReceiveMIDI is a multi-platform command-line tool makes it very easy to quickly receive and monitor MIDI messages from MIDI devices on your computer.
 
 All the heavy lifting is done by the wonderful JUCE library.
