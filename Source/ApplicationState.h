@@ -39,6 +39,14 @@ public:
     
     void outputMessage(const MidiMessage& msg, DisplayState& display) const;
 
+    // Test seam: configure the receiver from command-line arguments (filters and
+    // settings only - not device, virtual or file tokens, which open ports or
+    // read files), then feed one MIDI message and return the text it prints
+    // (empty when the message is filtered out). No MIDI port is opened.
+    void configure(const StringArray& params);
+    void configureLine(const String& line);
+    String receive(const MidiMessage& msg);
+
     MidiRPNDetector rpnDetector_;
     MidiRPNMessage rpnMsg_;
     

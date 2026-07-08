@@ -1,9 +1,9 @@
 name: CI
 
-# Builds ReceiveMIDI on macOS, Linux and Windows and smoke-checks the binary.
-# JUCE is vendored under JuceLibraryCode/modules, so no framework needs to be
-# fetched -- the committed Projucer build files are used as-is. A unit-test suite
-# will be run here once it exists.
+# Builds ReceiveMIDI and its unit-test suite on macOS, Linux and Windows, then
+# runs the tests and smoke-checks the binary. JUCE is vendored under
+# JuceLibraryCode/modules, so no framework needs to be fetched -- the committed
+# Projucer build files are used as-is.
 
 on:
   push:
@@ -37,6 +37,12 @@ jobs:
         run: |
           xcodebuild -project Builds/MacOSX/receivemidi.xcodeproj \
             -target "receivemidi - ConsoleApp" -configuration Release SYMROOT=build build
+          xcodebuild -project Tests/Builds/MacOSX/ReceiveMIDITests.xcodeproj \
+            -target "ReceiveMIDITests - ConsoleApp" -configuration Release SYMROOT=build build
+
+      - name: Run tests (macOS)
+        if: runner.os == 'macOS'
+        run: ./Tests/Builds/MacOSX/build/Release/ReceiveMIDITests
 
       - name: Smoke test (macOS)
         if: runner.os == 'macOS'
@@ -49,7 +55,13 @@ jobs:
 
       - name: Build (Linux)
         if: runner.os == 'Linux'
-        run: make -C Builds/LinuxMakefile CONFIG=Release -j"$(nproc)"
+        run: |
+          make -C Builds/LinuxMakefile CONFIG=Release -j"$(nproc)"
+          make -C Tests/Builds/LinuxMakefile CONFIG=Release -j"$(nproc)"
+
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
+        run: ./Tests/Builds/LinuxMakefile/build/ReceiveMIDITests
 
       - name: Smoke test (Linux)
         if: runner.os == 'Linux'
@@ -62,9 +74,15 @@ jobs:
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
-        # the committed project targets the v141 toolset (VS2017); build with the
+        # the committed projects target the v141 toolset (VS2017); build with the
         # runner's current toolset so no legacy build tools need installing
-        run: msbuild Builds/VisualStudio2017/receivemidi.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+        run: |
+          msbuild Builds/VisualStudio2017/receivemidi.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+          msbuild Tests/Builds/VisualStudio2017/ReceiveMIDITests.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        run: .\Tests\Builds\VisualStudio2017\x64\Release\ConsoleApp\ReceiveMIDITests.exe
 
       - name: Smoke test (Windows)
         if: runner.os == 'Windows'

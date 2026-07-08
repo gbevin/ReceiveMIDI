@@ -22,6 +22,8 @@
 #include "ScriptUtilClass.h"
 #include "TerminalColor.h"
 
+#include <sstream>
+
 static const int DEFAULT_OCTAVE_MIDDLE_C = 3;
 static const String& DEFAULT_VIRTUAL_NAME = "ReceiveMIDI";
 
@@ -480,6 +482,27 @@ void ApplicationState::dumpMessage(const MidiMessage& msg) const
 {
     std::cout.write((char *)msg.getRawData(), msg.getRawDataSize());
     std::cout.flush();
+}
+
+void ApplicationState::configure(const StringArray& params)
+{
+    StringArray p(params);
+    parseParameters(p);
+}
+
+void ApplicationState::configureLine(const String& line)
+{
+    configure(parseLineAsParameters(line));
+}
+
+String ApplicationState::receive(const MidiMessage& msg)
+{
+    // capture what the normal receive path prints for this one message
+    std::ostringstream captured;
+    auto* previous = std::cout.rdbuf(captured.rdbuf());
+    handleIncomingMidiMessage(nullptr, msg);
+    std::cout.rdbuf(previous);
+    return captured.str();
 }
 
 void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState& display) const
