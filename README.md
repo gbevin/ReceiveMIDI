@@ -37,60 +37,62 @@ To use it, simply type "receivemidi" or "receivemidi.exe" on the command line an
 
 These are all the supported commands:
 ```
-  dev   name       Set the name of the MIDI input port
-  virt  (name)     Use virtual MIDI port with optional name (Linux/macOS)
-  pass  name       Set name of MIDI output port for MIDI pass-through
-  list             Lists the MIDI input ports
-  file  path       Loads commands from the specified program file
-  dec              Interpret the next numbers as decimals by default
-  hex              Interpret the next numbers as hexadecimals by default
-  ch    number     Set MIDI channel for the commands (0-16), defaults to 0
-  ts               Output a timestamp for each received MIDI message
-  nn               Output notes as numbers instead of names
-  omc   number     Set octave for middle C, defaults to 3
-  voice            Show all Channel Voice messages
-  note             Show all Note messages
-  on    (note)     Show Note On, optionally for note (0-127)
-  off   (note)     Show Note Off, optionally for note (0-127)
-  pp    (note)     Show Poly Pressure, optionally for note (0-127)
-  cc    (number)   Show Control Change, optionally for controller (0-127)
-  cc14  (number)   Show 14-bit CC, optionally for controller (0-63)
-  nrpn  (number)   Show NRPN, optionally for parameter (0-16383)
-  nrpnf (number)   Show full NRPN (MSB+LSB), optionally for parameter (0-16383)
-  rpn   (number)   Show RPN, optionally for parameter (0-16383)
-  rpnf  (number)   Show full RPN (MSB+LSB), optionally for parameter (0-16383)
-  pc    (number)   Show Program Change, optionally for program (0-127)
-  cp               Show Channel Pressure
-  pb               Show Pitch Bend
-  sr               Show all System Real-Time messages
-  clock            Show Timing Clock
-  start            Show Start
-  stop             Show Stop
-  cont             Show Continue
-  as               Show Active Sensing
-  rst              Show Reset
-  sc               Show all System Common messages
-  syx              Show System Exclusive
-  syf   path       Store SysEx into a .syx file
-  tc               Show MIDI Time Code Quarter Frame
-  spp              Show Song Position Pointer
-  ss               Show Song Select
-  tun              Show Tune Request
-  q                Don't show the received messages on standard output
-  dump             Dump the received messages 1:1 on standard output
-  js    code       Execute this script for each received MIDI message
-  jsf   path       Execute the script in this file for each message
-  mpp   name       Configure responder MPE Profile creating virtual MIDI input
-        manager    and output ports with the provided name, available manager
-        members    channel (1-15 or 0 for any) and desired member channel
-                   count (1-15, or 0 for any) (Linux/macOS)
-  mcr   flag       Sets MPE Profile channel response feature (0-1)
-  mpb   flag       Sets MPE Profile pitch bend feature (0-1)
-  mcp   flag       Sets MPE Profile channel pressure feature (0-2)
-  m3d   flag       Sets MPE Profile 3rd dimension feature (0-2)
-  -h  or  --help   Print Help (this message) and exit
-  --version        Print version information and exit
-  --               Read commands from standard input until it's closed
+  dev   name     Set the name of the MIDI input port
+  virt  (name)   Use virtual MIDI port with optional name (Linux/macOS)
+  pass  name     Set name of MIDI output port for MIDI pass-through
+  list           Lists the MIDI input ports
+  file  path     Loads commands from the specified program file
+  dec            Interpret the next numbers as decimals by default
+  hex            Interpret the next numbers as hexadecimals by default
+  ch    number   Set MIDI channel for the commands (0-16), defaults to 0
+  ts             Output a timestamp for each received MIDI message
+  nn             Output notes as numbers instead of names
+  omc   number   Set octave for middle C, defaults to 3
+  voice          Show all Channel Voice messages
+  note           Show all Note messages
+  on    (note)   Show Note On, optionally for note (0-127)
+  off   (note)   Show Note Off, optionally for note (0-127)
+  pp    (note)   Show Poly Pressure, optionally for note (0-127)
+  cc    (number) Show Control Change, optionally for controller (0-127)
+  cc14  (number) Show 14-bit CC, optionally for controller (0-63)
+  nrpn  (number) Show NRPN, optionally for parameter (0-16383)
+  nrpnf (number) Show full NRPN (MSB+LSB), optionally for parameter (0-16383)
+  rpn   (number) Show RPN, optionally for parameter (0-16383)
+  rpnf  (number) Show full RPN (MSB+LSB), optionally for parameter (0-16383)
+  pc    (number) Show Program Change, optionally for program (0-127)
+  cp             Show Channel Pressure
+  pb             Show Pitch Bend
+  sr             Show all System Real-Time messages
+  clock          Show Timing Clock
+  start          Show Start
+  stop           Show Stop
+  cont           Show Continue
+  as             Show Active Sensing
+  rst            Show Reset
+  sc             Show all System Common messages
+  syx            Show System Exclusive
+  syf   path     Store SysEx into a .syx file
+  tc             Show MIDI Time Code Quarter Frame
+  spp            Show Song Position Pointer
+  ss             Show Song Select
+  tun            Show Tune Request
+  q              Don't show the received messages on standard output
+  dump           Dump the received messages 1:1 on standard output
+  js    code     Execute this script for each received MIDI message
+  jsf   path     Execute the script in this file for each message
+  mpp   name     Configure responder MPE Profile creating virtual MIDI input and
+        manager  output ports with the provided name, available manager channel
+        members  (1-15 or 0 for any) and desired member channel count (1-15, or
+                 0 for any) (Linux/macOS)
+  mcr   flag     Sets MPE Profile channel response feature (0-1)
+  mpb   flag     Sets MPE Profile pitch bend feature (0-1)
+  mcp   flag     Sets MPE Profile channel pressure feature (0-2)
+  m3d   flag     Sets MPE Profile 3rd dimension feature (0-2)
+
+Options:
+  -h  or  --help Print Help (this message) and exit
+  --version      Print version information and exit
+  --             Read commands from standard input until it's closed
 ```
 
 Alternatively, you can use the following long versions of the commands:
