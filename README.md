@@ -58,7 +58,7 @@ These are all the supported commands:
   off   (note)   Show Note Off, optionally for note (0-127)
   pp    (note)   Show Poly Pressure, optionally for note (0-127)
   cc    (number) Show Control Change, optionally for controller (0-127)
-  cc14  (number) Show 14-bit CC, optionally for controller (0-63)
+  cc14  (number) Show 14-bit CC, optionally for controller (0-31)
   nrpn  (number) Show NRPN, optionally for parameter (0-16383)
   nrpnf (number) Show full NRPN (MSB+LSB), optionally for parameter (0-16383)
   rpn   (number) Show RPN, optionally for parameter (0-16383)

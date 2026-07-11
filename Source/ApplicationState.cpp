@@ -130,7 +130,7 @@ ApplicationState::ApplicationState()
     commands_.add({"off",   "note-off",                 NOTE_OFF,             -1, {"(note)"},           {"Show Note Off, optionally for note (0-127)"}});
     commands_.add({"pp",    "poly-pressure",            POLY_PRESSURE,        -1, {"(note)"},           {"Show Poly Pressure, optionally for note (0-127)"}});
     commands_.add({"cc",    "control-change",           CONTROL_CHANGE,       -1, {"(number)"},         {"Show Control Change, optionally for controller (0-127)"}});
-    commands_.add({"cc14",  "control-change-14",        CONTROL_CHANGE_14BIT, -1, {"(number)"},         {"Show 14-bit CC, optionally for controller (0-63)"}});
+    commands_.add({"cc14",  "control-change-14",        CONTROL_CHANGE_14BIT, -1, {"(number)"},         {"Show 14-bit CC, optionally for controller (0-31)"}});
     commands_.add({"nrpn",  "",                         NRPN,                 -1, {"(number)"},         {"Show NRPN, optionally for parameter (0-16383)"}});
     commands_.add({"nrpnf", "nrpn-full",                NRPN_FULL,            -1, {"(number)"},         {"Show full NRPN (MSB+LSB), optionally for parameter (0-16383)"}});
     commands_.add({"rpn",   "",                         RPN,                  -1, {"(number)"},         {"Show RPN, optionally for parameter (0-16383)"}});
@@ -895,6 +895,20 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
         case MPE_3RD_DIMENSION:
             mpeProfile_->setSupportsThirdDimension(jlimit(0, 2, asDecOrHexIntValue(cmd.opts_[0])));
             break;
+        case CHANNEL:
+        {
+            auto channel = asDecOrHexIntValue(cmd.opts_[0]);
+            if (channel < 0 || channel > 16)
+            {
+                std::cerr << "Can't set channel to " << channel << " (it has to be between 0 and 16)" << std::endl;
+                JUCEApplicationBase::getInstance()->setApplicationReturnValue(EXIT_FAILURE);
+            }
+            else
+            {
+                filterCommands_.add(cmd);
+            }
+            break;
+        }
         default:
             filterCommands_.add(cmd);
             break;

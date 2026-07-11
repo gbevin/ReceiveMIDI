@@ -98,6 +98,15 @@ public:
             expect(s.receive(MidiMessage::noteOn(2, 60, (uint8)100)).isEmpty());
         }
 
+        beginTest("An out-of-range channel filter is rejected, not silently applied");
+        {
+            // channel 20 is invalid, so the ch filter is dropped and only the type
+            // filter remains, letting every channel through instead of matching none
+            ApplicationState s;
+            s.configureLine("ch 20 voice");
+            expect(s.receive(MidiMessage::noteOn(3, 60, (uint8)100)).isNotEmpty());
+        }
+
         beginTest("Without a filter every message passes");
         {
             // no configure: an empty filter list shows everything
