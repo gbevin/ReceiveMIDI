@@ -215,7 +215,20 @@ sudo mv build/receivemidi /usr/local/bin
 
 The output of the ReceiveMIDI tool is compatible with the SendMIDI tool, allowing you to store MIDI message sequences and play them back later. By using Unix-style pipes on the command-line, it's even possible to chain the receivemidi and sendmidi commands in order to forward MIDI messages.
 
-If you changed the octave for middle C or are outputting hexadecimal numbers instead of the default decimal numbers, make sure that you set up SendMIDI with the same parameters.
+Record a performance to a file with `ts` timestamps, then play it back with the original timing preserved (SendMIDI honors the timestamps in between the messages):
+
+```
+receivemidi dev "K-Board" ts > take.txt
+sendmidi dev "Synth" file take.txt
+```
+
+Forward MIDI from one port to another live through a pipe (this also works with `ts` on, since SendMIDI subtracts the time already spent from every timestamp):
+
+```
+receivemidi dev "K-Board" | sendmidi dev "Synth" --
+```
+
+If you changed the octave for middle C or are outputting hexadecimal numbers instead of the default decimal numbers, make sure that you set up SendMIDI with the same parameters. Don't record while the `syf` or `mpp` modes are active, their status messages end up on standard output in between the MIDI messages and can't be played back.
 
 SendMIDI can be downloaded from https://github.com/gbevin/SendMIDI
 
