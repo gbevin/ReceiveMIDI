@@ -22,6 +22,8 @@
 #include "ScriptUtilClass.h"
 #include "TerminalColor.h"
 
+#include <algorithm>
+#include <cmath>
 #include <sstream>
 
 static const int DEFAULT_OCTAVE_MIDDLE_C = 3;
@@ -123,6 +125,7 @@ ApplicationState::ApplicationState()
     commands_.add({"ch",    "channel",                  CHANNEL,               1, {"number"},           {"Set MIDI channel for the commands (0-16), defaults to 0"}});
     commands_.add({"ts",    "timestamp",                TIMESTAMP,             0, {""},                 {"Output a timestamp for each received MIDI message"}});
     commands_.add({"nn",    "note-numbers",             NOTE_NUMBERS,          0, {""},                 {"Output notes as numbers instead of names"}});
+    commands_.add({"bpm",   "beats-per-minute",         BEATS_PER_MINUTE,      0, {""},                 {"Show tempo of incoming MIDI clock instead of the ticks"}});
     commands_.add({"omc",   "octave-middle-c",          OCTAVE_MIDDLE_C,       1, {"number"},           {"Set octave for middle C, defaults to 3"}});
     commands_.add({"voice", "",                         VOICE,                 0, {""},                 {"Show all Channel Voice messages"}});
     commands_.add({"note",  "",                         NOTE,                  0, {""},                 {"Show all Note messages"}});
@@ -172,6 +175,15 @@ ApplicationState::ApplicationState()
     useHexadecimalsByDefault_ = false;
     quiet_ = false;
     rawdump_ = false;
+    bpmDisplay_ = false;
+    bpmInteractive_ = false;
+    lastBpmTime_ = 0.0;
+    lastPrintedBpm_ = 0.0;
+    avgBpm_ = 0.0;
+    lastAvgTime_ = 0.0;
+    clockJumpTime_ = 0.0;
+    crossingSince_ = 0.0;
+    bpmLineActive_ = false;
     currentCommand_ = ApplicationCommand::Dummy();
     
     mpeProfile_ = std::make_unique<MpeProfileNegotiation>();
@@ -497,15 +509,20 @@ void ApplicationState::configureLine(const String& line)
 
 String ApplicationState::receive(const MidiMessage& msg)
 {
-    // capture what the normal receive path prints for this one message
+    // capture what the normal receive path prints for this one message; a
+    // capture is not a terminal, so the tempo readout always uses its line
+    // mode here, keeping tests stable
+    bool wasInteractive = bpmInteractive_;
+    bpmInteractive_ = false;
     std::ostringstream captured;
     auto* previous = std::cout.rdbuf(captured.rdbuf());
     handleIncomingMidiMessage(nullptr, msg);
     std::cout.rdbuf(previous);
+    bpmInteractive_ = wasInteractive;
     return captured.str();
 }
 
-void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState& display) const
+void ApplicationState::outputTimestamp() const
 {
     if (timestampOutput_)
     {
@@ -515,7 +532,178 @@ void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState& displ
         << String(t.getSeconds()).paddedLeft('0', 2) << "."
         << String(t.getMilliseconds()).paddedLeft('0', 3) << "   ";
     }
-    
+}
+
+// how many MIDI clock timestamps are kept, and the tempo range reported
+static constexpr int TIMESTAMP_QUEUE_SIZE = 48;
+static constexpr double BPM_MIN = 20.0;
+static constexpr double BPM_MAX = 360.0;
+
+// measures the tempo of the incoming MIDI clock from the queued tick
+// timestamps; returns 0 while there aren't enough clean intervals yet
+double ApplicationState::measureClockBpm(double now) const
+{
+    // keep a queue of MIDI clock timestamps, never exceeding TIMESTAMP_QUEUE_SIZE
+    clockTimes_.push_front(now);
+    while (clockTimes_.size() > TIMESTAMP_QUEUE_SIZE)
+    {
+        clockTimes_.pop_back();
+    }
+    if (clockTimes_.size() < 2)
+    {
+        return 0.0;
+    }
+
+    // the average tick interval: the timestamps in between cancel out, so
+    // only the newest and the oldest matter
+    double avg = (clockTimes_.front() - clockTimes_.back()) / (double)(clockTimes_.size() - 1);
+
+    // only count intervals close to the average, keeping the normal timing
+    // differences between ticks but dropping stalls and bunched-up late ones
+    double sum = 0.0;
+    int kept = 0;
+    for (size_t i = 0; i + 1 < clockTimes_.size(); i++)
+    {
+        double interval = clockTimes_[i] - clockTimes_[i + 1];
+        if (std::abs(avg - interval) < avg * 0.15)
+        {
+            sum += interval;
+            ++kept;
+        }
+    }
+    // wait for a mostly full window: fewer intervals give a rough reading,
+    // while requiring even more starves the display at high tempos, where
+    // ticks are closer together and more of them get dropped above
+    if (kept < TIMESTAMP_QUEUE_SIZE * 3 / 4)
+    {
+        return 0.0;
+    }
+
+    double bpm = int((600.0 / (sum / kept) / 24.0) + 0.5) / 10.0;
+    return std::min(std::max(bpm, BPM_MIN), BPM_MAX);
+}
+
+// turns the readings into the whole BPM to display and reports whether it
+// changed: single readings wobble, so a running average smooths them and the
+// shown value only moves once the average clearly settles on another number
+bool ApplicationState::updateShownClockBpm(double bpm, double now) const
+{
+    double dt = now - lastAvgTime_;
+    if (lastAvgTime_ <= 0.0 || dt > 2.0)
+    {
+        avgBpm_ = bpm;
+    }
+    else
+    {
+        // after a tempo jump the average starts from a single reading that
+        // may round to the wrong number: while it disagrees with the display
+        // it catches up faster, and calms down again once they match
+        bool correcting = now - clockJumpTime_ < 1.5
+                          && std::abs(avgBpm_ - lastPrintedBpm_) >= 0.35;
+        avgBpm_ += std::min(1.0, dt / (correcting ? 0.35 : 1.0)) * (bpm - avgBpm_);
+    }
+    lastAvgTime_ = now;
+
+    // only a big change counts as a tempo jump, since the wobble at high
+    // tempos can span a few BPM; small real changes reach the display
+    // through the average anyway
+    if (std::abs(bpm - lastPrintedBpm_) >= std::max(4.0, bpm * 0.03))
+    {
+        avgBpm_ = bpm;
+        clockJumpTime_ = now;
+    }
+
+    if (std::abs(avgBpm_ - lastPrintedBpm_) < 0.75)
+    {
+        crossingSince_ = 0.0;
+        return false;
+    }
+
+    // a move of several BPM shows immediately, but a step to the next
+    // number has to stick around for a moment first, so a short wobble
+    // can't flip the display back and forth
+    double target = (double)((int)(avgBpm_ + 0.5));
+    if (std::abs(target - lastPrintedBpm_) < 2.0)
+    {
+        if (crossingSince_ <= 0.0)
+        {
+            crossingSince_ = now;
+            return false;
+        }
+        if (now - crossingSince_ < 0.6)
+        {
+            return false;
+        }
+    }
+    crossingSince_ = 0.0;
+    lastPrintedBpm_ = target;
+    return true;
+}
+
+void ApplicationState::outputClockTempo(double now) const
+{
+    double bpm = measureClockBpm(now);
+    if (bpm <= 0.0)
+    {
+        return;
+    }
+    bool changed = updateShownClockBpm(bpm, now);
+
+    if (bpmInteractive_)
+    {
+        // an interactive terminal gets a single line that is redrawn in
+        // place when the tempo changes, like an instrument display
+        if ((changed || !bpmLineActive_) && now - lastBpmTime_ > 0.25)
+        {
+            lastBpmTime_ = now;
+            std::cout << '\r';
+            outputTimestamp();
+            // the spaces erase leftovers of a longer previous value, the
+            // backspaces put the cursor right back after the digits
+            std::cout << "bpm " << (int)lastPrintedBpm_ << "  \b\b" << std::flush;
+            bpmLineActive_ = true;
+        }
+    }
+    else
+    {
+        // piped or redirected output gets a line right away when the tempo
+        // changes, and a repeat at a steady pace in between
+        if (changed || now - lastBpmTime_ > 2.0)
+        {
+            lastBpmTime_ = now;
+            outputTimestamp();
+            std::cout << "bpm " << (int)lastPrintedBpm_ << std::endl;
+        }
+    }
+}
+
+void ApplicationState::outputMessage(const MidiMessage& msg, DisplayState& display) const
+{
+    if (bpmDisplay_)
+    {
+        if (msg.isMidiClock())
+        {
+            // the tempo readout replaces the individual midi-clock lines
+            outputClockTempo(msg.getTimeStamp());
+            return;
+        }
+        if (msg.isMidiStart() || msg.isMidiContinue() || msg.isMidiStop())
+        {
+            // transport changes restart the measurement; the message itself
+            // still prints below
+            clockTimes_.clear();
+            lastAvgTime_ = 0.0;
+        }
+        if (bpmLineActive_)
+        {
+            // finish the in-place tempo line before a regular line prints
+            std::cout << std::endl;
+            bpmLineActive_ = false;
+        }
+    }
+
+    outputTimestamp();
+
     if (msg.isNoteOn())
     {
         std::cout << "channel "  << outputChannel(msg) << "   " <<
@@ -826,6 +1014,10 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
             break;
         case NOTE_NUMBERS:
             noteNumbersOutput_ = true;
+            break;
+        case BEATS_PER_MINUTE:
+            bpmDisplay_ = true;
+            bpmInteractive_ = ansi::terminalIsInteractive();
             break;
         case OCTAVE_MIDDLE_C:
             octaveMiddleC_ = asDecOrHex7BitValue(cmd.opts_[0]);

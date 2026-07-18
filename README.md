@@ -51,6 +51,7 @@ These are all the supported commands:
   ch    number   Set MIDI channel for the commands (0-16), defaults to 0
   ts             Output a timestamp for each received MIDI message
   nn             Output notes as numbers instead of names
+  bpm            Show tempo of incoming MIDI clock instead of the ticks
   omc   number   Set octave for middle C, defaults to 3
   voice          Show all Channel Voice messages
   note           Show all Note messages
@@ -102,12 +103,12 @@ Options:
 Alternatively, you can use the following long versions of the commands:
 ```
   device virtual pass-through decimal hexadecimal channel timestamp
-  note-numbers octave-middle-c note-on note-off poly-pressure control-change
-  control-change-14 nrpn-full rpn-full program-change channel-pressure
-  pitch-bend system-realtime continue active-sensing reset system-common
-  system-exclusive system-exclusive-file time-code song-position song-select
-  tune-request quiet javascript javascript-file mpe-profile mpe-channel-reponse
-  mpe-pitch-bend mpe-channel-pressure mpe-3rd-dimension
+  note-numbers beats-per-minute octave-middle-c note-on note-off poly-pressure
+  control-change control-change-14 nrpn-full rpn-full program-change
+  channel-pressure pitch-bend system-realtime continue active-sensing reset
+  system-common system-exclusive system-exclusive-file time-code song-position
+  song-select tune-request quiet javascript javascript-file mpe-profile
+  mpe-channel-reponse mpe-pitch-bend mpe-channel-pressure mpe-3rd-dimension
 ```
 
 By default, numbers are interpreted in the decimal system, this can be changed to hexadecimal by sending the "hex" command.

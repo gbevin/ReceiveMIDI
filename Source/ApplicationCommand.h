@@ -35,6 +35,7 @@ enum CommandIndex
     CHANNEL,
     TIMESTAMP,
     NOTE_NUMBERS,
+    BEATS_PER_MINUTE,
     OCTAVE_MIDDLE_C,
     VOICE,
     NOTE,

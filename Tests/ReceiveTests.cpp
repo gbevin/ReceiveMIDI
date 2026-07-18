@@ -112,6 +112,65 @@ public:
             // no configure: an empty filter list shows everything
             expect(ApplicationState().receive(MidiMessage::controllerEvent(1, 7, 100)).isNotEmpty());
         }
+
+        beginTest("The bpm setting shows the clock tempo instead of the ticks");
+        {
+            ApplicationState s;
+            s.configureLine("bpm");
+
+            auto tick = [&](double time)
+            {
+                MidiMessage clk = MidiMessage::midiClock();
+                clk.setTimeStamp(time);
+                return s.receive(clk);
+            };
+
+            // a steady clock at 20ms per tick is 125 BPM (24 ticks per beat);
+            // one line prints as soon as enough ticks arrived
+            String out;
+            double time = 3600.0;   // real timestamps are seconds since boot
+            out << tick(time);
+            for (int t = 0; t < 99; ++t)
+            {
+                time += 0.020;
+                out << tick(time);
+            }
+            expect(!out.contains("midi-clock"));
+            expectEquals(norm(out), String("bpm 125"));
+
+            // a burst of late-delivered ticks is filtered out: the repeat
+            // line that falls into this stretch still reads exactly 125
+            out.clear();
+            for (int t = 0; t < 5; ++t)
+            {
+                time += 0.001;
+                out << tick(time);
+            }
+            for (int t = 0; t < 48; ++t)
+            {
+                time += 0.020;
+                out << tick(time);
+            }
+            expectEquals(norm(out), String("bpm 125"));
+
+            // slowing down to 30ms per tick is a real tempo jump: it prints
+            // right away once the new tempo takes over, and then repeats
+            out.clear();
+            for (int t = 0; t < 240; ++t)
+            {
+                time += 0.030;
+                out << tick(time);
+            }
+            StringArray lines = StringArray::fromLines(out.trim());
+            expect(lines.size() >= 2);
+            for (const String& line : lines)
+            {
+                expectEquals(norm(line), String("bpm 83"));
+            }
+
+            // a transport message restarts the measurement and still prints
+            expectEquals(norm(s.receive(MidiMessage::midiStart())), String("start"));
+        }
     }
 };
 

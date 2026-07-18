@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <deque>
+
 #include "JuceHeader.h"
 
 #include "ApplicationCommand.h"
@@ -65,6 +67,10 @@ private:
     void parseFile(File file);
     void handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg) override;
     void dumpMessage(const MidiMessage& msg) const;
+    void outputTimestamp() const;
+    double measureClockBpm(double now) const;
+    bool updateShownClockBpm(double bpm, double now) const;
+    void outputClockTempo(double now) const;
     String output7BitAsHex(int v) const;
     String output7Bit(int v) const;
     String output14BitAsHex(int v) const;
@@ -93,6 +99,20 @@ private:
     bool useHexadecimalsByDefault_;
     bool quiet_;
     bool rawdump_;
+
+    // tempo readout for the bpm option: a single line updated in place on an
+    // interactive terminal, separate lines otherwise; mutable because the
+    // const output path keeps the measurement up to date
+    bool bpmDisplay_;
+    bool bpmInteractive_;
+    mutable std::deque<double> clockTimes_;
+    mutable double lastBpmTime_;
+    mutable double lastPrintedBpm_;
+    mutable double avgBpm_;
+    mutable double lastAvgTime_;
+    mutable double clockJumpTime_;
+    mutable double crossingSince_;
+    mutable bool bpmLineActive_;
     
     String midiInName_;
     std::unique_ptr<MidiInput> midiIn_;

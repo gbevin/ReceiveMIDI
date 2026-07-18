@@ -2,12 +2,12 @@
  * This file is part of ReceiveMIDI.
  * Copyright (command) 2017-2026 Uwyn LLC.  https://www.uwyn.com
  *
- * RouteMIDI is free software: you can redistribute it and/or modify
+ * ReceiveMIDI is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * RouteMIDI is distributed in the hope that it will be useful,
+ * ReceiveMIDI is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -36,4 +36,9 @@ namespace ansi
     // truecolor-capable (Windows 10 1703+), even though it sets no COLORTERM.
     // Only meaningful when terminalSupportsColor() is true.
     bool terminalSupportsTrueColor();
+
+    // whether standard output is an interactive terminal at all (as opposed
+    // to a pipe or a file), regardless of its color support: an interactive
+    // display can be updated in place with a carriage return
+    bool terminalIsInteractive();
 }
