@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="RmTst1" name="ReceiveMIDITests" projectType="consoleapp" version="1.5.0"
+<JUCERPROJECT id="RmTst1" name="ReceiveMIDITests" projectType="consoleapp" version="1.6.0"
               bundleIdentifier="com.uwyn.receivemiditests" includeBinaryInAppConfig="1"
               companyName="Uwyn" companyWebsite="http://www.uwyn.com" companyEmail="info@uwyn.com"
               displaySplashScreen="1" reportAppUsage="1" splashScreenColour="Dark"
