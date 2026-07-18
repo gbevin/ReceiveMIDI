@@ -244,12 +244,71 @@ void ApplicationState::initialise(JUCEApplicationBase& app)
     }
 }
 
-bool ApplicationState::isMidiInDeviceAvailable(const String& name)
+StringArray ApplicationState::displayNames(const Array<MidiDeviceInfo>& devices)
 {
-    auto devices = MidiInput::getAvailableDevices();
+    StringArray names;
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        int total = 0;
+        int position = 1;
+        for (int j = 0; j < devices.size(); ++j)
+        {
+            if (devices[j].name == devices[i].name)
+            {
+                total += 1;
+                if (j < i)
+                {
+                    position += 1;
+                }
+            }
+        }
+        if (total > 1)
+        {
+            names.add(devices[i].name + " (" + String(position) + ")");
+        }
+        else
+        {
+            names.add(devices[i].name);
+        }
+    }
+    return names;
+}
+
+int ApplicationState::matchDeviceIndex(const Array<MidiDeviceInfo>& devices, const String& name)
+{
+    StringArray names = displayNames(devices);
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        if (names[i] == name)
+        {
+            return i;
+        }
+    }
     for (int i = 0; i < devices.size(); ++i)
     {
         if (devices[i].name == name)
+        {
+            return i;
+        }
+    }
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        if (devices[i].name.containsIgnoreCase(name))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool ApplicationState::isMidiInDeviceAvailable(const String& identifier)
+{
+    // the identifier stays unique even when several ports share a name, so
+    // the twin of a disconnected port can't mask its disappearance
+    auto devices = MidiInput::getAvailableDevices();
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        if (devices[i].identifier == identifier)
         {
             return true;
         }
@@ -259,11 +318,12 @@ bool ApplicationState::isMidiInDeviceAvailable(const String& name)
 
 void ApplicationState::timerCallback()
 {
-    if (fullMidiInName_.isNotEmpty() && !isMidiInDeviceAvailable(fullMidiInName_))
+    if (fullMidiInName_.isNotEmpty() && !isMidiInDeviceAvailable(fullMidiInIdentifier_))
     {
         std::cerr << "MIDI input port \"" << fullMidiInName_ << "\" got disconnected, waiting" << std::endl;
-        
+
         fullMidiInName_ = String();
+        fullMidiInIdentifier_ = String();
         midiIn_ = nullptr;
     }
     else if ((midiInName_.isNotEmpty() && midiIn_ == nullptr))
@@ -342,37 +402,18 @@ std::unique_ptr<MidiOutput> ApplicationState::openOutputDevice(const String& nam
 {
     std::unique_ptr<MidiOutput> output;
 
-    String output_name = name;
-    
     auto devices = MidiOutput::getAvailableDevices();
-    for (int i = 0; i < devices.size(); ++i)
+    auto index = matchDeviceIndex(devices, name);
+    if (index >= 0)
     {
-        if (devices[i].name == output_name)
-        {
-            output = MidiOutput::openDevice(devices[i].identifier);
-            output_name = devices[i].name;
-            break;
-        }
-    }
-    
-    if (output == nullptr)
-    {
-        for (int i = 0; i < devices.size(); ++i)
-        {
-            if (devices[i].name.containsIgnoreCase(output_name))
-            {
-                output = MidiOutput::openDevice(devices[i].identifier);
-                output_name = devices[i].name;
-                break;
-            }
-        }
+        output = MidiOutput::openDevice(devices[index].identifier);
     }
     if (output == nullptr)
     {
-        std::cerr << "Couldn't find MIDI output port \"" << output_name << "\"" << std::endl;
+        std::cerr << "Couldn't find MIDI output port \"" << name << "\"" << std::endl;
         JUCEApplicationBase::getInstance()->setApplicationReturnValue(EXIT_FAILURE);
     }
-    
+
     return output;
 }
 
@@ -903,39 +944,28 @@ bool ApplicationState::tryToConnectMidiInput()
 {
     std::unique_ptr<MidiInput> midi_input = nullptr;
     String midi_input_name;
-    
+    String midi_input_identifier;
+
+    // matching the requested name again on every attempt keeps a numbered
+    // name like "Port (2)" pointing at that same instance across reconnects
     auto devices = MidiInput::getAvailableDevices();
-    for (int i = 0; i < devices.size(); ++i)
+    auto index = matchDeviceIndex(devices, midiInName_);
+    if (index >= 0)
     {
-        if (devices[i].name == midiInName_)
-        {
-            midi_input = MidiInput::openDevice(devices[i].identifier, this);
-            midi_input_name = devices[i].name;
-            break;
-        }
+        midi_input = MidiInput::openDevice(devices[index].identifier, this);
+        midi_input_name = devices[index].name;
+        midi_input_identifier = devices[index].identifier;
     }
-    
-    if (midi_input == nullptr)
-    {
-        for (int i = 0; i < devices.size(); ++i)
-        {
-            if (devices[i].name.containsIgnoreCase(midiInName_))
-            {
-                midi_input = MidiInput::openDevice(devices[i].identifier, this);
-                midi_input_name = devices[i].name;
-                break;
-            }
-        }
-    }
-    
+
     if (midi_input)
     {
         midi_input->start();
         midiIn_.swap(midi_input);
         fullMidiInName_ = midi_input_name;
+        fullMidiInIdentifier_ = midi_input_identifier;
         return true;
     }
-    
+
     return false;
 }
 
@@ -946,9 +976,9 @@ void ApplicationState::executeCommand(ApplicationCommand& cmd)
         case NONE:
             break;
         case LIST:
-            for (auto&& device : MidiInput::getAvailableDevices())
+            for (auto&& name : displayNames(MidiInput::getAvailableDevices()))
             {
-                std::cout << device.name << std::endl;
+                std::cout << name << std::endl;
             }
             JUCEApplicationBase::getInstance()->systemRequestedQuit();
             break;
@@ -1363,7 +1393,9 @@ void ApplicationState::printUsage()
     std::cout << std::endl;
     std::cout << "The MIDI device name doesn't have to be an exact match." << std::endl;
     std::cout << "If ReceiveMIDI can't find the exact name that was specified, it will pick the" << std::endl
-              << "first MIDI output port that contains the provided text, irrespective of case." << std::endl;
+              << "first MIDI output port that contains the provided text, irrespective of case." << std::endl
+              << "Ports that share the same name are listed with a number, like \"Port (2)\"," << std::endl
+              << "and that numbered name can be used to select that specific port." << std::endl;
     std::cout << std::endl;
     std::cout << "Where notes can be provided as arguments, they can also be written as note" << std::endl
               << "names, by default from C-2 to G8 which corresponds to note numbers 0 to 127." << std::endl

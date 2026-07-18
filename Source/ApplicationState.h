@@ -35,6 +35,16 @@ public:
     
     static std::unique_ptr<MidiOutput> openOutputDevice(const String& name);
 
+    // the names to show for these MIDI devices: ports that share the same
+    // name get a number appended, like "sooperlooper (2)", so each of them
+    // can be told apart and selected
+    static StringArray displayNames(const Array<MidiDeviceInfo>& devices);
+
+    // finds the device a name refers to: first as one of the display names
+    // above, then as an exact port name, then as a piece of a port name,
+    // ignoring case; returns -1 when nothing matches
+    static int matchDeviceIndex(const Array<MidiDeviceInfo>& devices, const String& name);
+
     uint8 asNoteNumber(String value) const;
     uint8 asDecOrHex7BitValue(String value) const;
     uint16 asDecOrHex14BitValue(String value) const;
@@ -55,7 +65,7 @@ public:
     int lastCC_[16][128];
 
 private:
-    bool isMidiInDeviceAvailable(const String& name);
+    bool isMidiInDeviceAvailable(const String& identifier);
     void timerCallback() override;
     
     ApplicationCommand* findApplicationCommand(const String& param);
@@ -117,6 +127,7 @@ private:
     String midiInName_;
     std::unique_ptr<MidiInput> midiIn_;
     String fullMidiInName_;
+    String fullMidiInIdentifier_;
     
     std::unique_ptr<MidiOutput> midiPass_;
     
