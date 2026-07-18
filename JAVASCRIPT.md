@@ -47,10 +47,16 @@ Additionally to all the usual JavaScript primitives and commands, ReceiveMIDI pr
 
 ```javascript
 Util.command('/full/path/to/executable arguments');
+Util.command('/full/path/to/executable', 'argument one', 'argument two');
 Util.print('some text');
 Util.println('some text with newline');
 Util.sleep(<milliseconds>);
 ```
+
+`Util.command` with a single string splits it on whitespace, honoring double
+quotes: `Util.command('say "two words"')` passes `two words` as one argument,
+without the quotes. With several arguments each one reaches the program
+exactly as given, which avoids quoting altogether.
 
 ## Sending OSC messages
 

@@ -18,7 +18,10 @@
 
 #include "JuceHeader.h"
 
+#include <sstream>
+
 #include "../Source/ApplicationState.h"
+#include "../Source/ScriptUtilClass.h"
 
 // Feeds MIDI messages through the real receive path and checks the text that is
 // printed for them, and that the filter commands include or exclude the right
@@ -171,6 +174,25 @@ public:
             // a transport message restarts the measurement and still prints
             expectEquals(norm(s.receive(MidiMessage::midiStart())), String("start"));
         }
+
+#if ! JUCE_WINDOWS
+        beginTest("Util.command passes quoted arguments without the quotes");
+        {
+            JavascriptEngine engine;
+            engine.registerNativeObject("Util", new ScriptUtilClass());
+
+            // the child's output goes through std::cout, so capture it there
+            std::ostringstream captured;
+            auto* previous = std::cout.rdbuf(captured.rdbuf());
+            auto r1 = engine.execute("Util.command('/bin/echo one \"two words\"');");
+            auto r2 = engine.execute("Util.command('/bin/echo', 'a b', 'c');");
+            std::cout.rdbuf(previous);
+
+            expect(r1.wasOk(), r1.getErrorMessage());
+            expect(r2.wasOk(), r2.getErrorMessage());
+            expectEquals(String(captured.str()), String("one two words\na b c\n"));
+        }
+#endif
     }
 };
 

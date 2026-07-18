@@ -44,18 +44,39 @@ String ScriptUtilClass::toString(const var::NativeFunctionArgs& a)
 var ScriptUtilClass::command(const var::NativeFunctionArgs& a)
 {
     if (a.numArguments == 0) return false;
-    
-    String cmd = a.arguments[0];
+
+    // with several arguments, each one reaches the program exactly as given;
+    // a single argument is split on whitespace honoring double quotes, and
+    // the quotes themselves are removed before the program sees the values
+    // (handing the whole string to ChildProcess would keep them in)
+    StringArray args;
+    if (a.numArguments > 1)
+    {
+        for (int i = 0; i < a.numArguments; ++i)
+        {
+            args.add(a.arguments[i].toString());
+        }
+    }
+    else
+    {
+        args.addTokens(a.arguments[0].toString(), true);
+        args.removeEmptyStrings();
+        for (int i = 0; i < args.size(); ++i)
+        {
+            args.getReference(i) = args.getReference(i).unquoted();
+        }
+    }
+
     ChildProcess child;
-    if (child.start(cmd))
+    if (child.start(args))
     {
         std::cout << child.readAllProcessOutput();
     }
     else
     {
-        std::cerr << "Script function Util.command('" << cmd << "') couldn't be started." << std::endl;
+        std::cerr << "Script function Util.command('" << args.joinIntoString(" ") << "') couldn't be started." << std::endl;
     }
-    
+
     return true;
 }
 
