@@ -194,7 +194,7 @@ To build ReceiveMIDI on Linux you need a minimal set of packages installed befor
 sudo apt install build-essential pkg-config libasound2-dev
 ```
 
-After that, go to the `LinuxMakeFile` directory
+After that, go to the `LinuxMakefile` directory
 
 ```
 cd Builds/LinuxMakefile
@@ -206,7 +206,7 @@ and build the binary by typing `make`
 make
 ```
 
-The resulting binary will be in the `Build/LinuxMakeFile/build` directory and can be moved anywhere appropriate on your system, for instance into `/usr/local/bin`:
+The resulting binary will be in the `Builds/LinuxMakefile/build` directory and can be moved anywhere appropriate on your system, for instance into `/usr/local/bin`:
 
 ```
 sudo mv build/receivemidi /usr/local/bin
