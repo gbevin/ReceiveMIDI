@@ -12,3 +12,5 @@ Tests/Builds/VisualStudio2022/x64
 Tests/Builds/MacOSX/ReceiveMIDITests.xcodeproj/xcuserdata
 Tests/Builds/MacOSX/ReceiveMIDITests.xcodeproj/project.xcworkspace/xcuserdata
 /e2e/
+/guest-output
+/guest-status
