@@ -63,6 +63,26 @@ new_port() {
     fi
 }
 
+# starts a tool in the background with its output in the given file; the MIDI
+# backend may refuse a virtual port created right after one vanished, so a
+# refused start is tried again
+start_background() {
+    local out="$1"
+    shift
+    local attempt
+    for attempt in 1 2 3; do
+        "$@" > "$out" 2>&1 &
+        started_pid=$!
+        sleep 1
+        if ! grep -q "Couldn't create virtual MIDI" "$out"; then
+            return 0
+        fi
+        kill "$started_pid" 2>/dev/null
+        wait "$started_pid" 2>/dev/null
+    done
+    return 1
+}
+
 stop_receiver() {
     if [ -n "$receiver_pid" ]; then
         kill "$receiver_pid" 2>/dev/null
@@ -280,8 +300,8 @@ check "dump writes the raw bytes" "90 3c 64 80 3c 00" \
 # --- pass-through and configuration from standard input --------------------
 if virtual_ports; then
     sink_name="E2E receivemidi sink $$ $RANDOM"
-    "$RECEIVEMIDI" virt "$sink_name" > "$WORK/sink.txt" 2>&1 &
-    sink=$!
+    start_background "$WORK/sink.txt" "$RECEIVEMIDI" virt "$sink_name"
+    sink=$started_pid
     # pass opens its output right away, so the sink has to be listed first
     for i in $(seq 1 20); do
         sleep 0.5
@@ -325,8 +345,8 @@ fi
 # --- the MPE Profile responder, including the optional feature details -----
 if virtual_ports; then
     name="E2E receivemidi mpe $$ $RANDOM"
-    "$RECEIVEMIDI" mpp "$name" 2 3 mcr 1 mpb 1 mcp 2 m3d 1 > "$WORK/mpe-responder.txt" 2>&1 &
-    responder=$!
+    start_background "$WORK/mpe-responder.txt" "$RECEIVEMIDI" mpp "$name" 2 3 mcr 1 mpb 1 mcp 2 m3d 1
+    responder=$started_pid
     sleep 2
     "$SENDMIDI" dev "$name" mpp "$name" 2 3 > "$WORK/mpe-initiator.txt" 2>&1
     sleep 1
