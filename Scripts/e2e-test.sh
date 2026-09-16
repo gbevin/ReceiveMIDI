@@ -242,7 +242,7 @@ if start_receiver "$WORK/syf.txt" syf "$WORK/captured.syx" cc 119; then
         fail "the captured SysEx file is byte-identical" "$(od -An -tx1 "$WORK/captured.syx" | head -3)"
     fi
 else
-    fail "syf reports the SysEx and stores it in the file" "the receiver never saw the start marker"
+    fail "syf reports the SysEx and stores it in the file" "the receiver never saw the start marker" "$(cat "$WORK/syf.txt")"
     stop_receiver
 fi
 
