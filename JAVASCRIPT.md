@@ -72,6 +72,10 @@ osc_sender = OSC.connect("hostname", port);
 osc_sender.send("/osc/path", arg1, arg2, ...);
 ```
 
+Whole numbers and booleans are sent as OSC int32 arguments, other numbers as
+float32 and everything else as strings. A number that happens to be whole is
+sent as an int32 even when it came from `MIDI.floatVelocity()`.
+
 ## Checking and retrieving data from the current MIDI message
 
 ```javascript

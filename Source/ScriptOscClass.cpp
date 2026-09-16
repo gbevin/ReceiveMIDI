@@ -18,7 +18,9 @@
 
 #include "ScriptOscClass.h"
 
+#include <cmath>
 #include <iostream>
+#include <limits>
 #include <memory>
 
 ScriptOscClass::ScriptOscClass()
@@ -54,7 +56,17 @@ var ScriptOscClass::connect(const var::NativeFunctionArgs& a)
                 }
                 else if (arg.isDouble())
                 {
-                    msg.addFloat32(arg);
+                    // the script engine hands over every number as a double, so a
+                    // whole number is sent as the integer the script meant
+                    double value = arg;
+                    if (value == std::floor(value) && value >= std::numeric_limits<int32>::min() && value <= std::numeric_limits<int32>::max())
+                    {
+                        msg.addInt32((int32)value);
+                    }
+                    else
+                    {
+                        msg.addFloat32((float)value);
+                    }
                 }
                 else
                 {
