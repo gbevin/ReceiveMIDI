@@ -318,9 +318,21 @@ else
     start_background "$WORK/dump.bin" "$RECEIVEMIDI" dev "$port" dump
 fi
 receiver_pid=$started_pid
-sleep 1
+# dump writes raw bytes, so there is no marker to wait for: wait for the port
+# to be visible to the sender, then for the bytes to land
+for attempt in $(seq 1 40); do
+    if "$SENDMIDI" list | grep -qF "$port"; then
+        break
+    fi
+    sleep 0.25
+done
 send on 60 100 off 60 0
-sleep 1
+for attempt in $(seq 1 40); do
+    if [ "$(wc -c < "$WORK/dump.bin" | tr -d ' ')" -ge 6 ]; then
+        break
+    fi
+    sleep 0.25
+done
 stop_receiver
 check "dump writes the raw bytes" "90 3c 64 80 3c 00" \
     "$(od -An -tx1 -v "$WORK/dump.bin" | tr -s ' \n' ' ' | sed 's/^ //; s/ $//')"
