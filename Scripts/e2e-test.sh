@@ -285,12 +285,12 @@ fi
 
 new_port
 if virtual_ports; then
-    "$RECEIVEMIDI" virt "$port" dump > "$WORK/dump.bin" 2>&1 &
+    start_background "$WORK/dump.bin" "$RECEIVEMIDI" virt "$port" dump
 else
-    "$RECEIVEMIDI" dev "$port" dump > "$WORK/dump.bin" 2>&1 &
+    start_background "$WORK/dump.bin" "$RECEIVEMIDI" dev "$port" dump
 fi
-receiver_pid=$!
-sleep 2
+receiver_pid=$started_pid
+sleep 1
 send on 60 100 off 60 0
 sleep 1
 stop_receiver
@@ -327,12 +327,19 @@ if virtual_ports; then
 fi
 
 new_port
-if virtual_ports; then
-    printf 'virt "%s"\nnn\nnote\ncc 119\n' "$port" | "$RECEIVEMIDI" -- > "$WORK/stdin.txt" 2>&1 &
-else
-    printf 'dev "%s"\nnn\nnote\ncc 119\n' "$port" | "$RECEIVEMIDI" -- > "$WORK/stdin.txt" 2>&1 &
-fi
-receiver_pid=$!
+for attempt in 1 2 3; do
+    if virtual_ports; then
+        printf 'virt "%s"\nnn\nnote\ncc 119\n' "$port" | "$RECEIVEMIDI" -- > "$WORK/stdin.txt" 2>&1 &
+    else
+        printf 'dev "%s"\nnn\nnote\ncc 119\n' "$port" | "$RECEIVEMIDI" -- > "$WORK/stdin.txt" 2>&1 &
+    fi
+    receiver_pid=$!
+    sleep 1
+    if ! grep -q "Couldn't create virtual MIDI" "$WORK/stdin.txt"; then
+        break
+    fi
+    stop_receiver
+done
 if wait_for_receiver "$WORK/stdin.txt"; then
     send on 60 100 cc 1 1
     finish_receiver "$WORK/stdin.txt"
