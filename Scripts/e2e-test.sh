@@ -263,6 +263,34 @@ else
     stop_receiver
 fi
 
+# --- a script runs for each message, given inline and from a file ----------
+if start_receiver "$WORK/js.txt" js "if (MIDI.isNoteOn()) Util.println('script saw note ' + MIDI.noteNumber());"; then
+    send on 60 100
+    finish_receiver "$WORK/js.txt"
+    if printf '%s\n' "$received" | grep -q '^script saw note 60$'; then
+        pass "js runs the script for each message"
+    else
+        fail "js runs the script for each message" "$received"
+    fi
+else
+    fail "js runs the script for each message" "the receiver never saw the start marker"
+    stop_receiver
+fi
+
+printf "if (MIDI.isNoteOn()) Util.println('file script saw note ' + MIDI.noteNumber());\n" > "$WORK/script.js"
+if start_receiver "$WORK/jsf.txt" jsf "$WORK/script.js"; then
+    send on 62 100
+    finish_receiver "$WORK/jsf.txt"
+    if printf '%s\n' "$received" | grep -q '^file script saw note 62$'; then
+        pass "jsf runs the script from a file"
+    else
+        fail "jsf runs the script from a file" "$received"
+    fi
+else
+    fail "jsf runs the script from a file" "the receiver never saw the start marker"
+    stop_receiver
+fi
+
 # --- SysEx capture to a file and the raw dump -------------------------------
 python3 - "$WORK/big.syx" <<'PY' 2>/dev/null || printf '\xF0\x7D\x01\x02\x03\x7F\xF7' > "$WORK/big.syx"
 import sys
