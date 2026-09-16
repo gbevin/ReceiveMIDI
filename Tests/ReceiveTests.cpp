@@ -79,7 +79,8 @@ public:
         beginTest("The omc setting shifts the note names");
         {
             ApplicationState s;
-            s.configureLine("omc 4");   // middle C is now C4, so note 60 is C4
+            // middle C is now C4, so note 60 is C4
+            s.configureLine("omc 4");
             expectEquals(norm(s.receive(MidiMessage::noteOn(1, 60, (uint8)100))),
                          String("channel 1 note-on C4 100"));
         }
@@ -87,7 +88,8 @@ public:
         beginTest("A message-type filter shows only matching messages");
         {
             ApplicationState s;
-            s.configureLine("on");   // only note-ons pass
+            // only note-ons pass
+            s.configureLine("on");
             expect(s.receive(MidiMessage::noteOn(1, 60, (uint8)100)).isNotEmpty());
             expect(s.receive(MidiMessage::controllerEvent(1, 74, 55)).isEmpty());
             expect(s.receive(MidiMessage::noteOff(1, 60, (uint8)0)).isEmpty());
@@ -224,7 +226,8 @@ public:
             // a steady clock at 20ms per tick is 125 BPM (24 ticks per beat);
             // one line prints as soon as enough ticks arrived
             String out;
-            double time = 3600.0;   // real timestamps are seconds since boot
+            // real timestamps are seconds since boot
+            double time = 3600.0;
             out << tick(time);
             for (int t = 0; t < 99; ++t)
             {
@@ -268,7 +271,7 @@ public:
             expectEquals(norm(s.receive(MidiMessage::midiStart())), String("start"));
         }
 
-#if ! JUCE_WINDOWS
+#if !JUCE_WINDOWS
         beginTest("Util.command passes quoted arguments without the quotes");
         {
             JavascriptEngine engine;

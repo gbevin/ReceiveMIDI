@@ -32,7 +32,8 @@ public:
     {
         beginTest("Note names map to numbers around the middle-C octave");
         {
-            ApplicationState s;                       // default middle C is octave 3
+            // default middle C is octave 3
+            ApplicationState s;
             expectEquals((int)s.asNoteNumber("C3"), 60);
             expectEquals((int)s.asNoteNumber("C-2"), 0);
             expectEquals((int)s.asNoteNumber("G8"), 127);
@@ -44,7 +45,8 @@ public:
         beginTest("The octave-middle-c setting shifts the note names");
         {
             ApplicationState s;
-            s.configureLine("omc 4");                 // middle C is now C4
+            // middle C is now C4
+            s.configureLine("omc 4");
             expectEquals((int)s.asNoteNumber("C3"), 48);
             expectEquals((int)s.asNoteNumber("C4"), 60);
         }
