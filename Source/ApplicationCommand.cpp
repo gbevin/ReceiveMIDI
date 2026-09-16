@@ -113,30 +113,22 @@ void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg,
             break;
         case NRPN:
         case NRPN_FULL:
-            if (checkChannel(msg, display.channel) && msg.isController())
+            if (checkChannel(msg, display.channel) && state.rpnComplete_)
             {
-                auto nrpn = state.rpnDetector_.tryParse(msg.getChannel(), msg.getControllerNumber(), msg.getControllerValue());
-                if (nrpn.has_value())
-                {
-                    display.displayNrpn = state.rpnMsg_.isNRPN &&
-                        (command_ == NRPN || (command_ == NRPN_FULL && state.rpnMsg_.is14BitValue)) &&
-                        (opts_.isEmpty() || (state.rpnMsg_.parameterNumber == state.asDecOrHex14BitValue(opts_[0])));
-                        display.filtered |= display.displayNrpn;
-                }
+                display.displayNrpn = state.rpnMsg_.isNRPN &&
+                    (command_ == NRPN || (command_ == NRPN_FULL && state.rpnMsg_.is14BitValue)) &&
+                    (opts_.isEmpty() || (state.rpnMsg_.parameterNumber == state.asDecOrHex14BitValue(opts_[0])));
+                display.filtered |= display.displayNrpn;
             }
             break;
         case RPN:
         case RPN_FULL:
-            if (checkChannel(msg, display.channel) && msg.isController())
+            if (checkChannel(msg, display.channel) && state.rpnComplete_)
             {
-                auto rpn = state.rpnDetector_.tryParse(msg.getChannel(), msg.getControllerNumber(), msg.getControllerValue());
-                if (rpn.has_value())
-                {
-                    display.displayRpn = !state.rpnMsg_.isNRPN &&
-                        (command_ == RPN || (command_ == RPN_FULL && state.rpnMsg_.is14BitValue)) &&
-                        (opts_.isEmpty() || (state.rpnMsg_.parameterNumber == state.asDecOrHex14BitValue(opts_[0])));
-                        display.filtered |= display.displayRpn;
-                }
+                display.displayRpn = !state.rpnMsg_.isNRPN &&
+                    (command_ == RPN || (command_ == RPN_FULL && state.rpnMsg_.is14BitValue)) &&
+                    (opts_.isEmpty() || (state.rpnMsg_.parameterNumber == state.asDecOrHex14BitValue(opts_[0])));
+                display.filtered |= display.displayRpn;
             }
             break;
         case PROGRAM_CHANGE:

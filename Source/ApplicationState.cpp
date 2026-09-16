@@ -483,6 +483,18 @@ void ApplicationState::parseFile(File file)
 void ApplicationState::handleIncomingMidiMessage(MidiInput*, const MidiMessage& msg)
 {
     DisplayState display;
+
+    // the detector is stateful, so a message is parsed once and the filters
+    // read the result
+    rpnComplete_ = false;
+    if (msg.isController())
+    {
+        if (auto rpn = rpnDetector_.tryParse(msg.getChannel(), msg.getControllerNumber(), msg.getControllerValue()))
+        {
+            rpnMsg_ = *rpn;
+            rpnComplete_ = true;
+        }
+    }
     
     if (!filterCommands_.isEmpty())
     {

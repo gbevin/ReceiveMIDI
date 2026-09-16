@@ -61,6 +61,7 @@ public:
 
     MidiRPNDetector rpnDetector_;
     MidiRPNMessage rpnMsg_;
+    bool rpnComplete_ { false };
     
     int lastCC_[16][128];
 

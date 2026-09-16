@@ -117,6 +117,20 @@ public:
             expect(t.receive(MidiMessage::controllerEvent(1, 74, 55)).isNotEmpty());
         }
 
+        beginTest("NRPN and RPN filters print the parameter number and value");
+        {
+            // both filters are active, so the stateful detector must see each
+            // controller message only once
+            ApplicationState s;
+            s.configureLine("nrpnf rpnf");
+            auto feed = [&](int cc, int value) { return s.receive(MidiMessage::controllerEvent(1, cc, value)); };
+            feed(99, 2); feed(98, 44); feed(6, 7);
+            expectEquals(norm(feed(38, 104)), String("channel 1 nrpn 300 1000"));
+            feed(101, 127); feed(100, 127);
+            feed(101, 0); feed(100, 0); feed(6, 0);
+            expectEquals(norm(feed(38, 2)), String("channel 1 rpn 0 2"));
+        }
+
         beginTest("An out-of-range channel filter is rejected, not silently applied");
         {
             // channel 20 is invalid, so the ch filter is dropped and only the type
