@@ -68,6 +68,8 @@ stop_receiver() {
         kill "$receiver_pid" 2>/dev/null
         wait "$receiver_pid" 2>/dev/null
         receiver_pid=""
+        # the MIDI backend may refuse a port created right after one vanished
+        sleep 0.5
     fi
 }
 
@@ -91,14 +93,26 @@ wait_for_receiver() {
 start_receiver() {
     local out="$1"
     shift
-    new_port
-    if virtual_ports; then
-        "$RECEIVEMIDI" virt "$port" "$@" > "$out" 2>&1 &
-    else
-        "$RECEIVEMIDI" dev "$port" "$@" > "$out" 2>&1 &
-    fi
-    receiver_pid=$!
-    wait_for_receiver "$out"
+    local attempt
+    for attempt in 1 2 3; do
+        new_port
+        if virtual_ports; then
+            "$RECEIVEMIDI" virt "$port" "$@" > "$out" 2>&1 &
+        else
+            "$RECEIVEMIDI" dev "$port" "$@" > "$out" 2>&1 &
+        fi
+        receiver_pid=$!
+        if wait_for_receiver "$out"; then
+            return 0
+        fi
+        if ! grep -q "Couldn't create virtual MIDI" "$out"; then
+            break
+        fi
+        stop_receiver
+    done
+    echo "     receiver output:"
+    sed 's/^/     | /' "$out"
+    return 1
 }
 
 # sends the end marker, waits for it, stops the receiver and leaves the lines
