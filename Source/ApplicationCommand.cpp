@@ -67,7 +67,7 @@ void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg,
                 (opts_.isEmpty() || (msg.getNoteNumber() == state.asNoteNumber(opts_[0])));
             break;
         case CONTROL_CHANGE:
-            display.displayControlChange = checkChannel(msg, display.channel) &&
+            display.displayControlChange |= checkChannel(msg, display.channel) &&
                 msg.isController() &&
                 (opts_.isEmpty() || (msg.getControllerNumber() == state.asDecOrHex7BitValue(opts_[0])));
             display.filtered |= display.displayControlChange;
@@ -108,7 +108,7 @@ void ApplicationCommand::filter(ApplicationState& state, const MidiMessage& msg,
                 }
             }
             
-            display.displayControlChange = display.displayControlChange14bit;
+            display.displayControlChange |= display.displayControlChange14bit;
             display.filtered |= display.displayControlChange;
             break;
         case NRPN:

@@ -102,6 +102,21 @@ public:
             expect(s.receive(MidiMessage::noteOn(2, 60, (uint8)100)).isEmpty());
         }
 
+        beginTest("Several controller filters add up instead of the last one winning");
+        {
+            ApplicationState s;
+            s.configureLine("cc 74 cc 119");
+            expect(s.receive(MidiMessage::controllerEvent(1, 74, 55)).isNotEmpty());
+            expect(s.receive(MidiMessage::controllerEvent(1, 119, 1)).isNotEmpty());
+            expect(s.receive(MidiMessage::controllerEvent(1, 1, 2)).isEmpty());
+
+            // a 14-bit filter next to a plain one keeps both
+            ApplicationState t;
+            t.configureLine("cc14 1 cc 74");
+            expect(t.receive(MidiMessage::controllerEvent(1, 1, 64)).contains("cc14"));
+            expect(t.receive(MidiMessage::controllerEvent(1, 74, 55)).isNotEmpty());
+        }
+
         beginTest("An out-of-range channel filter is rejected, not silently applied");
         {
             // channel 20 is invalid, so the ch filter is dropped and only the type
