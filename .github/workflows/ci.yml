@@ -82,17 +82,15 @@ jobs:
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
-        # the committed projects target the v141 toolset (VS2017); build with the
-        # runner's current toolset so no legacy build tools need installing
         run: |
-          msbuild Builds/VisualStudio2017/receivemidi.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
-          msbuild Tests/Builds/VisualStudio2017/ReceiveMIDITests.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+          msbuild Builds/VisualStudio2022/receivemidi.sln /m /p:Configuration=Release /p:Platform=x64
+          msbuild Tests/Builds/VisualStudio2022/ReceiveMIDITests.sln /m /p:Configuration=Release /p:Platform=x64
 
       - name: Run tests (Windows)
         if: runner.os == 'Windows'
-        run: .\Tests\Builds\VisualStudio2017\x64\Release\ConsoleApp\ReceiveMIDITests.exe
+        run: .\Tests\Builds\VisualStudio2022\x64\Release\ConsoleApp\ReceiveMIDITests.exe
 
       - name: Smoke test (Windows)
         if: runner.os == 'Windows'
         shell: bash
-        run: ./Builds/VisualStudio2017/x64/Release/ConsoleApp/receivemidi.exe --version | grep -q "receivemidi v"
+        run: ./Builds/VisualStudio2022/x64/Release/ConsoleApp/receivemidi.exe --version | grep -q "receivemidi v"

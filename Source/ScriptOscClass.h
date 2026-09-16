@@ -20,19 +20,6 @@
 
 #include "JuceHeader.h"
 
-class ScriptOscSenderClass : public DynamicObject
-{
-public:
-    ScriptOscSenderClass(const String& host, int port);
-    
-    static var send(const var::NativeFunctionArgs&);
-    
-private:
-    OSCSender sender_;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ScriptOscSenderClass)
-};
-
 class ScriptOscClass : public DynamicObject
 {
 public:

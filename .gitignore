@@ -2,12 +2,12 @@ Builds/*/build
 Builds/MacOSX/*.xcodeproj/xcuserdata
 Builds/MacOSX/receivemidi.xcodeproj/project.xcworkspace/xcuserdata
 /.vs
-/Builds/VisualStudio2017/.vs
-/Builds/VisualStudio2017/x64
-/Builds/VisualStudio2017/receivemidi_ConsoleApp.vcxproj.user
+/Builds/VisualStudio2022/.vs
+/Builds/VisualStudio2022/x64
+/Builds/VisualStudio2022/receivemidi_ConsoleApp.vcxproj.user
 Installers
 Tests/Builds/*/build
-Tests/Builds/VisualStudio2017/.vs
-Tests/Builds/VisualStudio2017/x64
+Tests/Builds/VisualStudio2022/.vs
+Tests/Builds/VisualStudio2022/x64
 Tests/Builds/MacOSX/ReceiveMIDITests.xcodeproj/xcuserdata
 Tests/Builds/MacOSX/ReceiveMIDITests.xcodeproj/project.xcworkspace/xcuserdata
