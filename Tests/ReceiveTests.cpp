@@ -131,6 +131,69 @@ public:
             expectEquals(norm(feed(38, 2)), String("channel 1 rpn 0 2"));
         }
 
+        beginTest("The system real-time filter shows those messages and nothing else");
+        {
+            ApplicationState s;
+            s.configureLine("sr");
+            expectEquals(norm(s.receive(MidiMessage::midiClock())), String("midi-clock"));
+            expectEquals(norm(s.receive(MidiMessage::midiStart())), String("start"));
+            expectEquals(norm(s.receive(MidiMessage::midiStop())), String("stop"));
+            expectEquals(norm(s.receive(MidiMessage::midiContinue())), String("continue"));
+            expectEquals(norm(s.receive(MidiMessage(0xfe))), String("active-sensing"));
+            expectEquals(norm(s.receive(MidiMessage(0xff))), String("reset"));
+
+            expect(s.receive(MidiMessage::noteOn(1, 60, (uint8)100)).isEmpty());
+            expect(s.receive(MidiMessage::songPositionPointer(100)).isEmpty());
+        }
+
+        beginTest("The system common filter shows those messages and nothing else");
+        {
+            ApplicationState s;
+            s.configureLine("sc");
+            expectEquals(norm(s.receive(MidiMessage::quarterFrame(1, 5))), String("time-code 1 5"));
+            expectEquals(norm(s.receive(MidiMessage::songPositionPointer(100))), String("song-position 100"));
+            expectEquals(norm(s.receive(MidiMessage(0xf3, 3))), String("song-select 3"));
+            expectEquals(norm(s.receive(MidiMessage(0xf6))), String("tune-request"));
+
+            expect(s.receive(MidiMessage::midiClock()).isEmpty());
+            expect(s.receive(MidiMessage::noteOn(1, 60, (uint8)100)).isEmpty());
+        }
+
+        beginTest("Each system filter narrows to its own message type");
+        {
+            // every one of these is the only message its filter lets through
+            const std::pair<const char*, MidiMessage> cases[] = {
+                { "cont", MidiMessage::midiContinue() },
+                { "rst",  MidiMessage(0xff) },
+                { "spp",  MidiMessage::songPositionPointer(100) },
+                { "ss",   MidiMessage(0xf3, 3) },
+                { "tun",  MidiMessage(0xf6) },
+            };
+
+            for (const auto& wanted : cases)
+            {
+                for (const auto& other : cases)
+                {
+                    ApplicationState s;
+                    s.configureLine(wanted.first);
+                    const auto printed = s.receive(other.second);
+                    if (wanted.first == other.first)
+                    {
+                        expect(printed.isNotEmpty(), String(wanted.first) + " should show its own message");
+                    }
+                    else
+                    {
+                        expect(printed.isEmpty(), String(wanted.first) + " should not show " + other.first);
+                    }
+                }
+
+                // and never a channel voice message
+                ApplicationState s;
+                s.configureLine(wanted.first);
+                expect(s.receive(MidiMessage::noteOn(1, 60, (uint8)100)).isEmpty());
+            }
+        }
+
         beginTest("An out-of-range channel filter is rejected, not silently applied");
         {
             // channel 20 is invalid, so the ch filter is dropped and only the type
