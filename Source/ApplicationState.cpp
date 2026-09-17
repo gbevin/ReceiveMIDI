@@ -351,7 +351,7 @@ ApplicationCommand* ApplicationState::findApplicationCommand(const String& param
 {
     for (auto&& cmd : commands_)
     {
-        if (cmd.param_.equalsIgnoreCase(param) || cmd.altParam_.equalsIgnoreCase(param))
+        if (cmd.matchesName(param))
         {
             return &cmd;
         }
